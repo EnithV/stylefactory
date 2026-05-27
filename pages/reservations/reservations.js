@@ -1,6 +1,5 @@
 /**
- * Actualiza la interfaz del navbar según el estado de sesión del usuario
- * Muestra el nombre del usuario logueado y oculta el botón de acceder
+ * Actualiza la interfaz del navbar según el estado de sesión del usuario.
  */
 function actualizarNavbar() {
     const usuarioLogueado = localStorage.getItem('usuarioLogueado');
@@ -26,21 +25,19 @@ function actualizarNavbar() {
 }
 
 /**
- * Cierra la sesión del usuario eliminando solo los datos de sesión actual
- * Los usuarios registrados permanecen en localStorage para futuros inicios de sesión
- * Redirige a la página de inicio
+ * Cierra la sesión del usuario y redirige al inicio.
  */
 function cerrarSesion() {
     localStorage.removeItem('usuarioLogueado');
     actualizarNavbar();
-    window.location.href = '/index.html';
+    window.location.href = '../../index.html';
 }
 
 /**
- * Carga los componentes comunes del navbar y footer
- * Inicializa la sesión del usuario y configura el botón de cierre de sesión
+ * Carga los componentes comunes (navbar y footer) mediante fetch.
+ * Las rutas son relativas a la ubicación actual (pages/reservations/).
  */
-fetch("/components/navbar/navbar.html")
+fetch("../../components/navbar/navbar.html")
   .then((res) => res.text())
   .then((html) => { 
       document.getElementById("header").innerHTML = html;
@@ -58,8 +55,8 @@ fetch("../../components/footer/footer.html")
   .catch((err) => console.error("Error cargando el footer:", err));
 
 /**
- * Renderiza la información del servicio seleccionado en la página de reserva
- * Obtiene los datos del servicio desde localStorage
+ * Renderiza la información del servicio seleccionado en la página de reserva.
+ * Obtiene los datos del servicio desde localStorage.
  */
 function renderizarReservas() {
   const container = document.getElementById('reservas_container');
@@ -79,7 +76,7 @@ function renderizarReservas() {
       <div class="texto col">
         <div class="texto-header">
           <h1>${servicio.nombre}</h1>
-          <a href="/pages/catalogoServicios/catalogoServicios.html" class="btn-cambiar-servicio">
+          <a href="../catalogoServicios/catalogoServicios.html" class="btn-cambiar-servicio">
             ← Cambiar servicio
           </a>
         </div>
@@ -99,7 +96,8 @@ function renderizarReservas() {
 document.addEventListener('DOMContentLoaded', renderizarReservas);
 
 /**
- * Lista de estilistas con sus especialidades, fotos y disponibilidad por fecha
+ * Lista de estilistas con sus especialidades, fotos y disponibilidad.
+ * Los datos se muestran en un carrusel para que el usuario elija.
  */
 const estilistas = [
   { id: 1, nombre: "Ana García", especialidad: "Colorimetría", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336588/Sty1_wj2bmn.png", disponibilidad: { "2026-04-28": ["09:00", "10:00", "14:00", "15:00"], "2026-04-29": ["09:00", "11:00", "16:00"], "2026-04-30": ["10:00", "13:00", "17:00"], "2026-05-02": ["09:00", "10:00", "11:00"], "2026-05-03": ["14:00", "15:00", "16:00"] } },
@@ -111,8 +109,7 @@ const estilistas = [
 ];
 
 /**
- * Renderiza el carrusel de estilistas
- * Agrupa los estilistas en grupos de 4 para cada slide del carrusel
+ * Renderiza el carrusel de estilistas agrupándolos en tarjetas de 4 columnas.
  */
 const carouselInner = document.getElementById("carouselInner");
 const cantCards = 4;
@@ -142,7 +139,7 @@ for (let i = 0; i < estilistas.length; i += cantCards) {
 }
 
 /**
- * Estado global de la selección de reserva
+ * Estado global de la selección de reserva.
  */
 const estado = {
   estilista: null,
@@ -156,9 +153,7 @@ const MESES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "
 const DIAS_SEM = ["D", "L", "M", "M", "J", "V", "S"];
 
 /**
- * Maneja la selección de un estilista
- * Muestra la sección de calendario y carga sus fechas disponibles
- * @param {number} id - Identificador del estilista seleccionado
+ * Maneja la selección de un estilista y carga su disponibilidad.
  */
 function seleccionarEstilista(id) {
   const estilista = estilistas.find((e) => e.id === id);
@@ -169,8 +164,7 @@ function seleccionarEstilista(id) {
 }
 
 /**
- * Inicializa el estado de fecha y hora para el estilista seleccionado
- * @param {Object} estilista - Objeto del estilista seleccionado
+ * Inicializa el estado de fecha y hora para el estilista seleccionado.
  */
 function initFechaHora(estilista) {
   estado.estilista = estilista;
@@ -187,7 +181,7 @@ function initFechaHora(estilista) {
 }
 
 /**
- * Renderiza el calendario con los días disponibles del estilista
+ * Renderiza el calendario con los días disponibles del estilista.
  */
 function renderCalendario() {
   document.getElementById("calMonthLabel").textContent = `${MESES[estado.mes]} ${estado.anio}`;
@@ -219,8 +213,7 @@ function renderCalendario() {
 }
 
 /**
- * Maneja la selección de una fecha en el calendario
- * @param {string} fechaStr - Fecha seleccionada en formato YYYY-MM-DD
+ * Maneja la selección de una fecha en el calendario.
  */
 function seleccionarFecha(fechaStr) {
   estado.fecha = fechaStr;
@@ -233,8 +226,7 @@ function seleccionarFecha(fechaStr) {
 }
 
 /**
- * Renderiza los horarios disponibles para la fecha seleccionada
- * @param {string} fechaStr - Fecha seleccionada
+ * Renderiza los horarios disponibles para la fecha seleccionada.
  */
 function renderHoras(fechaStr) {
   const contenedor = document.getElementById("horasGrid");
@@ -253,9 +245,7 @@ function renderHoras(fechaStr) {
 }
 
 /**
- * Maneja la selección de un horario
- * Actualiza el componente de confirmación de servicio
- * @param {string} hora - Horario seleccionado
+ * Maneja la selección de un horario y actualiza el componente de confirmación.
  */
 function seleccionarHora(hora) {
   estado.hora = hora;
@@ -283,7 +273,7 @@ function seleccionarHora(hora) {
 }
 
 /**
- * Navegación del calendario: mes anterior
+ * Navegación del calendario: mes anterior.
  */
 document.getElementById("prevMonth").addEventListener("click", () => {
   estado.mes--;
@@ -296,7 +286,7 @@ document.getElementById("prevMonth").addEventListener("click", () => {
 });
 
 /**
- * Navegación del calendario: mes siguiente
+ * Navegación del calendario: mes siguiente.
  */
 document.getElementById("nextMonth").addEventListener("click", () => {
   estado.mes++;

@@ -1,4 +1,7 @@
-// Función para actualizar el navbar según el estado de sesión del usuario
+/**
+ * Actualiza el navbar según el estado de sesión almacenado en localStorage.
+ * Muestra el nombre del usuario y oculta los botones de acceso si hay sesión activa.
+ */
 function actualizarNavbar() {
     const usuarioLogueado = localStorage.getItem('usuarioLogueado');
     const userInfo = document.getElementById('user-info');
@@ -22,15 +25,21 @@ function actualizarNavbar() {
     }
 }
 
-// Función para cerrar sesión
+/**
+ * Cierra la sesión del usuario y redirige al inicio.
+ * Ruta relativa desde la ubicación actual (pages/registro/).
+ */
 function cerrarSesion() {
     localStorage.removeItem('usuarioLogueado');
     actualizarNavbar();
-    window.location.href = '/index.html';
+    window.location.href = '../../index.html';
 }
 
-// Cargar navbar y configurar eventos de sesión
-fetch('/components/navbar/navbar.html')
+/**
+ * Carga el componente navbar y configura los eventos de sesión.
+ * La ruta es relativa a la ubicación de esta página.
+ */
+fetch('../../components/navbar/navbar.html')
     .then(res => res.text())
     .then(html => {
         document.getElementById('header').innerHTML = html;
@@ -42,8 +51,10 @@ fetch('/components/navbar/navbar.html')
     })
     .catch(err => console.error('Error cargando el navbar:', err));
 
-// Cargar footer
-fetch('/components/footer/footer.html')
+/**
+ * Carga el componente footer desde su archivo HTML.
+ */
+fetch('../../components/footer/footer.html')
     .then(res => res.text())
     .then(html => {
         document.getElementById('footer-placeholder').innerHTML = html;

@@ -1,9 +1,18 @@
+/**
+ * Importa las dependencias necesarias para la gestión de servicios.
+ * productos: catálogo de servicios por defecto.
+ * initFormulario: función que inicializa el formulario de creación/edición.
+ */
 import { productos } from "../../catalogoServicios/catalogoServicios.js";
 import { initFormulario } from "../../../components/forms/creacionServicios/formCreacionServicios.js";
 
 const KEY = "Lista de Servicios";
 let indexAEliminar = null;
 
+/**
+ * Renderiza la tabla de servicios en el DOM.
+ * Obtiene los datos de localStorage y genera las filas dinámicamente.
+ */
 export function renderizarTabla() {
   const servicios = JSON.parse(localStorage.getItem(KEY)) || [];
   const tbody = document.getElementById("tabla-servicios");
@@ -39,6 +48,10 @@ export function renderizarTabla() {
   });
 }
 
+/**
+ * Inicializa la página de lista de servicios: carga el formulario,
+ * renderiza la tabla y configura los eventos de edición y eliminación.
+ */
 export function initListaServicios() {
   const servicios = JSON.parse(localStorage.getItem(KEY)) || [];
   if (servicios.length === 0) {
@@ -46,7 +59,11 @@ export function initListaServicios() {
     localStorage.setItem(KEY, JSON.stringify(servicios));
   }
 
-  fetch("/components/forms/creacionServicios/formCreacionServicios.html")
+  /**
+   * Carga el formulario de creación de servicios desde su componente HTML.
+   * La ruta es relativa a la ubicación actual (pages/admin/listaServicios/).
+   */
+  fetch("../../../components/forms/creacionServicios/formCreacionServicios.html")
     .then((res) => res.text())
     .then((html) => {
       document.getElementById("form-services").innerHTML = html;
@@ -56,6 +73,7 @@ export function initListaServicios() {
 
   renderizarTabla();
 
+  // Limpia el foco cuando se cierra el modal de eliminación
   const modalElement = document.getElementById("modalEliminar");
   if (modalElement) {
     modalElement.addEventListener("hidden.bs.modal", () => {
@@ -64,8 +82,8 @@ export function initListaServicios() {
     });
   }
 
+  // Delegación de eventos para los botones de editar y eliminar
   document.addEventListener("click", function (e) {
-    // Botón eliminar
     const btnEliminar = e.target.closest(".btn-eliminar");
     if (btnEliminar) {
       indexAEliminar = btnEliminar.dataset.index;
@@ -74,7 +92,6 @@ export function initListaServicios() {
       return;
     }
 
-    // Botón editar
     const btnEditar = e.target.closest(".btn-editar");
     if (btnEditar) {
       const index = btnEditar.dataset.index;
@@ -92,6 +109,7 @@ export function initListaServicios() {
     }
   });
 
+  // Configura el botón de confirmación de eliminación
   const btnConfirmar = document.getElementById("btn-confirmar-eliminar");
   if (btnConfirmar) {
     btnConfirmar.addEventListener("click", function () {

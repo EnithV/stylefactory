@@ -4,12 +4,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Dependencias externas -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous" />
-  <link rel="stylesheet" href="/components/footer/footer.css" />
-  <link rel="stylesheet" href="/components/navbar/navbar.css" />
-  <link rel="stylesheet" href="/components/confirmacionServicio/confirmacionServicio.css" />
+  <!-- Hojas de estilo locales con rutas relativas -->
+  <link rel="stylesheet" href="../../components/footer/footer.css" />
+  <link rel="stylesheet" href="../../components/navbar/navbar.css" />
+  <link rel="stylesheet" href="../../components/confirmacionServicio/confirmacionServicio.css" />
   <link rel="stylesheet" href="reservations.css" />
   <link rel="stylesheet" href="../../assets/css/main.css">
   <title>Reservas</title>
@@ -19,7 +21,7 @@
 
   <header id="header" class="sticky-top"></header>
 
-  <!-- ── PASO 1: SERVICIO SELECCIONADO ── -->
+  <!-- PASO 1: SERVICIO SELECCIONADO -->
   <section class="seccion-reserva py-4" id="seccionServicio">
     <h2 class="card-title text-center mb-2">Tu servicio</h2>
     <p class="text-center subtitle">Revisa el servicio que seleccionaste</p>
@@ -27,7 +29,7 @@
     </div>
   </section>
 
-  <!-- ── PASO 2: SECCIÓN ESTILISTAS ── -->
+  <!-- PASO 2: SECCIÓN ESTILISTAS -->
   <section class="seccion-reserva py-5">
     <h2 class="card-title text-center mb-2">Nuestros Estilistas</h2>
     <p class="text-center subtitle">Elige a tu estilista y reserva tu cita</p>
@@ -44,7 +46,7 @@
     </div>
   </section>
 
-  <!-- ── PASO 3: SECCIÓN FECHA Y HORA (oculta hasta que se elija un estilista) ── -->
+  <!-- PASO 3: SECCIÓN FECHA Y HORA (oculta hasta que se elija un estilista) -->
   <section class="seccion-reserva pb-5" id="seccionCalendario" style="display:none;">
 
     <div class="detalle-container">
@@ -52,7 +54,7 @@
 
       <div class="row g-4">
 
-        <!-- ── COLUMNA CALENDARIO ── -->
+        <!-- COLUMNA CALENDARIO -->
         <div class="col-md-4">
           <div class="calendario-wrapper p-3">
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -64,7 +66,7 @@
           </div>
         </div>
 
-        <!-- ── COLUMNA HORAS ── -->
+        <!-- COLUMNA HORAS -->
         <div class="col-md-8">
           <div class="horas-wrapper p-3">
             <p class="horas-fecha-label" id="horasFechaLabel">Selecciona un día disponible</p>
@@ -78,7 +80,7 @@
 
       </div>
     
-      <!-- ── PASO 4: CONFIRMACIÓN ── -->
+      <!-- PASO 4: CONFIRMACIÓN -->
       <div id="confirmacionServicioWrapper" class="confirmacion-wrapper" style="display:none; margin-top: 30px;">
         <div class="confirmacion-container">
           <div class="confirmacion-header">
@@ -123,15 +125,17 @@
 
   <div id="footer-placeholder"></div>
 
+  <!-- Scripts de terceros -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
     crossorigin="anonymous"></script>
-  <script src="/components/confirmacionServicio/confirmacionServicio.js"></script>
-  <script src="../assets/js/config.js"></script>
+  <!-- Scripts locales con rutas relativas -->
+  <script src="../../components/confirmacionServicio/confirmacionServicio.js"></script>
+  <script src="../../assets/js/config.js"></script>
   <script src="reservations.js"></script>
 </body>
 
-<!-- Modal -->
+<!-- Modal de confirmación de reserva -->
 <div class="modal fade" id="modalConfirmacionReserva" tabindex="-1" aria-labelledby="modalConfirmacionLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">

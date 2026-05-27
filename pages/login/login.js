@@ -1,4 +1,9 @@
-// Función para actualizar el navbar según el estado de sesión del usuario
+/**
+ * Actualiza la interfaz del navbar según el estado de sesión del usuario.
+ * Si hay un usuario logueado (almacenado en localStorage), muestra su nombre
+ * y oculta los botones de acceso. Si el rol es "admin", muestra el enlace
+ * al panel de administración.
+ */
 function actualizarNavbar() {
     const usuarioLogueado = localStorage.getItem('usuarioLogueado');
     const userInfo = document.getElementById('user-info');
@@ -22,15 +27,23 @@ function actualizarNavbar() {
     }
 }
 
-// Función para cerrar sesión
+/**
+ * Cierra la sesión del usuario eliminando sus datos de localStorage
+ * y redirige a la página de inicio.
+ * La ruta es relativa a la ubicación actual (pages/login/).
+ */
 function cerrarSesion() {
     localStorage.removeItem('usuarioLogueado');
     actualizarNavbar();
-    window.location.href = '/index.html';
+    window.location.href = '../../index.html';
 }
 
-// Cargar navbar y configurar eventos de sesión
-fetch('/components/navbar/navbar.html')
+/**
+ * Carga el componente navbar desde su archivo HTML y configura los eventos
+ * de sesión. Utiliza una ruta relativa para garantizar la portabilidad
+ * entre el entorno local y GitHub Pages.
+ */
+fetch('../../components/navbar/navbar.html')
     .then(res => res.text())
     .then(html => {
         document.getElementById('header').innerHTML = html;
@@ -42,8 +55,11 @@ fetch('/components/navbar/navbar.html')
     })
     .catch(err => console.error('Error cargando el navbar:', err));
 
-// Cargar footer
-fetch('/components/footer/footer.html')
+/**
+ * Carga el componente footer desde su archivo HTML.
+ * Ruta relativa a la ubicación actual.
+ */
+fetch('../../components/footer/footer.html')
     .then(res => res.text())
     .then(html => {
         document.getElementById('footer-placeholder').innerHTML = html;

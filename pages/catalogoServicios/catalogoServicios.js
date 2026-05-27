@@ -1,6 +1,6 @@
 /**
- * Actualiza la interfaz del navbar según el estado de sesión del usuario
- * Muestra el nombre del usuario logueado y oculta el botón de acceder
+ * Actualiza la interfaz del navbar según el estado de sesión del usuario.
+ * Muestra el nombre del usuario logueado y oculta el botón de acceder.
  */
 function actualizarNavbar() {
     const usuarioLogueado = localStorage.getItem('usuarioLogueado');
@@ -26,18 +26,21 @@ function actualizarNavbar() {
 }
 
 /**
- * Cierra la sesión del usuario eliminando solo los datos de sesión actual
- * Los usuarios registrados permanecen en localStorage para futuros inicios de sesión
- * Redirige a la página de inicio
+ * Cierra la sesión del usuario y redirige al inicio.
  */
 function cerrarSesion() {
     localStorage.removeItem('usuarioLogueado');
     actualizarNavbar();
-    window.location.href = '/index.html';
+    window.location.href = '../../index.html';
 }
 
+/**
+ * Inicializa la carga del navbar, footer y catálogo cuando el contenedor
+ * de tarjetas está presente en el DOM.
+ * Las rutas de fetch son relativas a la ubicación actual (pages/catalogoServicios/).
+ */
 if (document.getElementById('cards-container')) {
-    fetch('/components/navbar/navbar.html')
+    fetch('../../components/navbar/navbar.html')
         .then(res => res.text())
         .then(html => { 
             document.getElementById('header').innerHTML = html;
@@ -49,7 +52,7 @@ if (document.getElementById('cards-container')) {
         })
         .catch(err => console.error('Error cargando el navbar:', err));
 
-    fetch('/components/footer/footer.html')
+    fetch('../../components/footer/footer.html')
         .then(res => res.text())
         .then(html => { document.getElementById('footer-placeholder').innerHTML = html; })
         .catch(err => console.error('Error cargando el footer:', err));
@@ -59,6 +62,11 @@ if (document.getElementById('cards-container')) {
 
 let btnReservar;
 
+/**
+ * Catálogo de servicios por defecto. Se utiliza como respaldo si no hay
+ * datos en localStorage. Cada producto tiene id, nombre, descripción,
+ * precio, imagen y status (activo/inactivo).
+ */
 const productos = [
     { id: 1, nombre: "Corte de Cabello Premium", descripcion: "Corte moderno con técnicas personalizadas según tu tipo de cabello.", precio: 45000, imagen: "https://res.cloudinary.com/diq2bkb49/image/upload/v1776957776/cortePremium_engl79.png", status: true },
     { id: 2, nombre: "Tinte y Coloración", descripcion: "Coloración de alta calidad con marcas premium. Resultados duraderos.", precio: 120000, imagen: "https://res.cloudinary.com/diq2bkb49/image/upload/v1776957782/tinteColoracion_xlsf5v.png", status: true },
@@ -73,8 +81,8 @@ const productos = [
 ];
 
 /**
- * Renderiza el catálogo de servicios en el contenedor correspondiente
- * Filtra solo los servicios activos y genera las tarjetas dinámicamente
+ * Renderiza el catálogo de servicios en el contenedor con id 'cards-container'.
+ * Filtra solo los servicios activos y genera las tarjetas dinámicamente.
  */
 function renderizarCatalogo() {
     const container = document.getElementById('cards-container');
@@ -103,16 +111,18 @@ function renderizarCatalogo() {
 
     container.innerHTML = html;
 
+    // Configura el botón de reservar para cada servicio
     document.querySelectorAll('.btn-reservar').forEach(boton => {
         boton.addEventListener('click', function () {
             const id = parseInt(this.getAttribute('data-id'));
             const listaActual = JSON.parse(localStorage.getItem("Lista de Servicios")) || productos;
             const productoSeleccionado = listaActual.find(p => p.id === id);
 
-            // Guarda el servicio seleccionado para la reserva
+            // Guarda el servicio seleccionado para usarlo en la página de reserva
             localStorage.setItem('servicioSeleccionado', JSON.stringify(productoSeleccionado));
 
-            window.location.href = '/pages/reservations/reservations.html';
+            // Redirige a la página de reservas (ruta relativa a la ubicación actual)
+            window.location.href = '../reservations/reservations.html';
         });
     });
 }

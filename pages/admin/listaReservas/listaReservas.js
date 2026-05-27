@@ -1,6 +1,15 @@
+/**
+ * Módulo de gestión de reservas en el panel de administración.
+ * Utiliza localStorage como almacenamiento temporal mientras se integra
+ * con la API real del backend.
+ */
 const KEY = "reservas";
 let indexAEliminar = null;
 
+/**
+ * Renderiza la tabla de reservas en el DOM.
+ * Obtiene los datos de localStorage y genera las filas dinámicamente.
+ */
 export function renderizarTablaReservas() {
     const reservas = JSON.parse(localStorage.getItem(KEY)) || [];
     const tbody = document.getElementById("tabla-reservas");
@@ -33,9 +42,14 @@ export function renderizarTablaReservas() {
     });
 }
 
+/**
+ * Inicializa la página de lista de reservas: renderiza la tabla y configura
+ * los eventos de eliminación con confirmación modal.
+ */
 export function initListaReservas() {
     renderizarTablaReservas();
 
+    // Delegación de eventos para el botón de eliminar
     document.addEventListener("click", function (e) {
         const btnEliminar = e.target.closest(".btn-eliminar-reserva");
         if (!btnEliminar) return;
@@ -44,6 +58,7 @@ export function initListaReservas() {
         modal.show();
     });
 
+    // Configura el botón de confirmación de eliminación
     const btnConfirmar = document.getElementById("btn-confirmar-eliminar-reserva");
     if (btnConfirmar) {
         btnConfirmar.addEventListener("click", function () {
