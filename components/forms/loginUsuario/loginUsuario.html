@@ -31,8 +31,14 @@
 
         </form>
 
+        <!--
+          Enlace a la página de registro.
+          La ruta es relativa a la ubicación de este formulario:
+          components/forms/loginUsuario/ → sube tres niveles y entra en pages/registro/.
+          target="_top" saca la página del iframe y la carga en la ventana completa.
+        -->
         <div class="registro-link">
-            ¿No tienes cuenta? <a href="/pages/registro/registro.html" target="_top">Regístrate aquí</a>
+            ¿No tienes cuenta? <a href="../../pages/registro/registro.html" target="_top">Regístrate aquí</a>
         </div>
 
         <div id="mensajeBienvenida" class="mensaje-bienvenida" style="display: none;"></div>
