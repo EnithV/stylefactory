@@ -33,10 +33,10 @@ function actualizarNavbar() {
 function cerrarSesion() {
     localStorage.removeItem('usuarioLogueado');
     actualizarNavbar();
-    window.location.href = '/index.html';
+    window.location.href = '../../index.html';
 }
 
-fetch('/components/navbar/navbar.html')
+fetch('../../components/navbar/navbar.html')
     .then(res => res.text())
     .then(html => {
         document.getElementById('header').innerHTML = html;
