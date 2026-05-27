@@ -4,17 +4,14 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', function(event) {
         event.preventDefault();
         
-        // Limpiar mensajes anteriores
         limpiarErrores();
         ocultarMensajes();
         
-        // Obtener valores
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
         
         let isValid = true;
         
-        // Validación de email
         if (email === '') {
             mostrarError('errorEmail', 'El correo electrónico es obligatorio');
             isValid = false;
@@ -23,63 +20,87 @@ document.addEventListener('DOMContentLoaded', function() {
             isValid = false;
         }
         
-        // Validación de contraseña
         if (password === '') {
             mostrarError('errorPassword', 'La contraseña es obligatoria');
             isValid = false;
         }
         
-        // Si es válido, verificar en localStorage
         if (isValid) {
-            const usuario = verificarCredenciales(email, password);
-            
-            if (usuario) {
+            const requestBody = {
+                correo: email,
+                contrasena: password
+            };
+
+            fetch(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => null);
+                    throw new Error(errorData?.mensaje || 'Credenciales inválidas');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // La respuesta incluye: token, nombre, rol, correo
+                const token = data.token;
+                const nombre = data.nombre;
+                const rol = data.rol;
+
+                // Guardar sesión
+                localStorage.setItem('token', token);
                 localStorage.setItem('usuarioLogueado', JSON.stringify({
-                    email: usuario.email,
-                    nombre: usuario.nombreCompleto,
-                    rol: usuario.rol,
+                    email: data.correo,
+                    nombre: nombre,
+                    rol: rol,
                     fechaLogin: new Date().toISOString()
                 }));
-                
+
                 const mensajeBienvenida = document.getElementById('mensajeBienvenida');
-                mensajeBienvenida.textContent = `¡Bienvenido/a, ${usuario.nombreCompleto}!`;
+                mensajeBienvenida.textContent = `¡Bienvenido/a, ${nombre}!`;
                 mensajeBienvenida.style.display = 'block';
-                
+
                 setTimeout(() => {
-                    if (usuario.rol === 'admin') {
-                        window.parent.location.href = '/pages/admin/panelDeControl/panelControl.html';
+                    if (rol === 'ADMIN') {
+                        window.location.href = '/pages/admin/panelDeControl/panelControl.html';
                     } else {
-                        window.parent.location.href = '/index.html';
+                        window.location.href = '/index.html';
                     }
                 }, 2000);
-            } else {
+            })
+            .catch(error => {
+                console.error('Error en login:', error);
                 const mensajeError = document.getElementById('mensajeError');
-                mensajeError.textContent = '❌ Correo electrónico o contraseña incorrectos';
+                mensajeError.textContent = '❌ ' + error.message;
                 mensajeError.style.display = 'block';
-            }
+            });
         }
     });
     
-    // Función para verificar credenciales en localStorage
+    // =========================================================
+    // Funciones auxiliares (localStorage ya no se usa para credenciales)
+    // =========================================================
+    
+    /*
     function verificarCredenciales(email, password) {
         const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
         return usuarios.find(usuario => usuario.email === email && usuario.password === password);
     }
+    */
     
-    // Función para validar email
     function validarEmail(email) {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return regex.test(email);
     }
     
-    // Función para mostrar errores específicos
     function mostrarError(elementId, mensaje) {
         const errorSpan = document.getElementById(elementId);
         errorSpan.textContent = mensaje;
         errorSpan.style.display = 'block';
     }
     
-    // Función para limpiar errores específicos
     function limpiarErrores() {
         const errores = document.querySelectorAll('.error');
         errores.forEach(error => {
@@ -88,7 +109,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Función para ocultar mensajes de bienvenida/error
     function ocultarMensajes() {
         const mensajeBienvenida = document.getElementById('mensajeBienvenida');
         const mensajeError = document.getElementById('mensajeError');

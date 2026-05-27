@@ -1,7 +1,7 @@
 /**
- * Valida los requisitos de la contraseña en tiempo real
- * Verifica longitud, mayúsculas, minúsculas, números y caracteres especiales
- * Actualiza la interfaz visual de requisitos a medida que el usuario escribe
+ * Valida los requisitos de la contraseña en tiempo real.
+ * Verifica longitud, mayúsculas, minúsculas, números y caracteres especiales.
+ * Actualiza la interfaz visual de requisitos a medida que el usuario escribe.
  */
 function validarRequisitosPassword() {
     const password = document.getElementById('password').value;
@@ -43,7 +43,7 @@ function validarRequisitosPassword() {
 }
 
 /**
- * Inicializa el formulario de registro y configura los eventos
+ * Inicializa el formulario de registro y configura los eventos.
  */
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('formRegistro');
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
         passwordInput.addEventListener('input', validarRequisitosPassword);
     }
     
-    mostrarUsuariosEnConsola();
+    // mostrarUsuariosEnConsola();  // Ya no se utiliza (datos en backend)
     
     form.addEventListener('submit', function(event) {
         event.preventDefault();
@@ -82,10 +82,9 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (!validarEmail(email)) {
             mostrarError('errorEmail', 'Ingrese un correo electrónico válido (ejemplo: usuario@dominio.com)');
             isValid = false;
-        } else if (emailExiste(email)) {
-            mostrarError('errorEmail', 'Este correo electrónico ya está registrado');
-            isValid = false;
         }
+        // La verificación de duplicados ahora se realiza en el backend
+        // (se elimina emailExiste porque se basa en localStorage)
         
         if (telefono === '') {
             mostrarError('errorTelefono', 'El número de teléfono es obligatorio');
@@ -115,56 +114,58 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         if (isValid) {
-            const usuario = {
-                id: Date.now(),
-                nombreCompleto: nombre,
-                email: email,
+            // Construir el cuerpo de la petición según el DTO RegisterRequestDTO
+            const requestBody = {
+                nombre: nombre,
+                correo: email,
                 telefono: telefono,
-                password: password,
-                rol: "usuario",
-                fechaRegistro: new Date().toISOString()
+                contrasena: password
             };
-            
-            guardarUsuario(usuario);
-            console.log(JSON.stringify(usuario, null, 2));
-            mostrarUsuariosEnConsola();
-            
-            const mensajeExito = document.getElementById('mensajeExito');
-            mensajeExito.style.display = 'block';
-            
-            setTimeout(() => {
-                window.parent.location.href = '/pages/login/login.html';
-            }, 3000);
+
+            fetch(`${API_BASE}/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => null);
+                    throw new Error(errorData?.message || 'Error en el registro');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const mensajeExito = document.getElementById('mensajeExito');
+                mensajeExito.style.display = 'block';
+                setTimeout(() => {
+                    window.location.href = '/pages/login/login.html';
+                }, 3000);
+            })
+            .catch(error => {
+                console.error('Error en registro:', error);
+                alert('No se pudo completar el registro. ' + error.message);
+            });
         }
     });
     
-    /**
-     * Guarda un nuevo usuario en localStorage
-     * @param {Object} usuario - Objeto con los datos del usuario
-     */
+    // =========================================================
+    // Funciones auxiliares (localStorage ya no se usa, se comentan)
+    // =========================================================
+    
+    /*
     function guardarUsuario(usuario) {
         let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
         usuarios.push(usuario);
         localStorage.setItem('usuarios', JSON.stringify(usuarios));
-        console.log(`Usuario guardado en localStorage. Total: ${usuarios.length} usuarios`);
     }
     
-    /**
-     * Verifica si un correo electrónico ya está registrado
-     * @param {string} email - Correo a verificar
-     * @returns {boolean} - True si ya existe, false en caso contrario
-     */
     function emailExiste(email) {
         let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
         return usuarios.some(usuario => usuario.email === email);
     }
     
-    /**
-     * Muestra la lista de usuarios registrados en la consola
-     */
     function mostrarUsuariosEnConsola() {
         let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-        
         if (usuarios.length === 0) {
             console.log('No hay usuarios registrados aún');
         } else {
@@ -175,10 +176,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    function resetearEtiquetas() {
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.value = '';
+            input.dispatchEvent(new Event('input'));
+        });
+    }
+    */
+    
     /**
-     * Valida el formato de un correo electrónico
-     * @param {string} email - Correo a validar
-     * @returns {boolean} - True si es válido, false en caso contrario
+     * Valida el formato de un correo electrónico.
+     * @param {string} email - Correo a validar.
+     * @returns {boolean} True si el formato es válido.
      */
     function validarEmail(email) {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -186,9 +196,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     /**
-     * Valida que el teléfono tenga al menos 7 dígitos
-     * @param {string} telefono - Teléfono a validar
-     * @returns {boolean} - True si es válido, false en caso contrario
+     * Valida que el teléfono contenga al menos 7 dígitos numéricos.
+     * @param {string} telefono - Teléfono a validar.
+     * @returns {boolean} True si es válido.
      */
     function validarTelefono(telefono) {
         const digitos = telefono.replace(/\D/g, '');
@@ -196,9 +206,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     /**
-     * Muestra un mensaje de error en el campo especificado
-     * @param {string} elementId - ID del elemento donde mostrar el error
-     * @param {string} mensaje - Mensaje de error a mostrar
+     * Muestra un mensaje de error en el elemento indicado.
+     * @param {string} elementId - ID del elemento HTML.
+     * @param {string} mensaje - Texto del error.
      */
     function mostrarError(elementId, mensaje) {
         const errorSpan = document.getElementById(elementId);
@@ -207,24 +217,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     /**
-     * Limpia todos los mensajes de error del formulario
+     * Limpia todos los mensajes de error del formulario.
      */
     function limpiarErrores() {
         const errores = document.querySelectorAll('.error');
         errores.forEach(error => {
             error.textContent = '';
             error.style.display = 'none';
-        });
-    }
-    
-    /**
-     * Resetea las etiquetas flotantes del formulario
-     */
-    function resetearEtiquetas() {
-        const inputs = document.querySelectorAll('input');
-        inputs.forEach(input => {
-            input.value = '';
-            input.dispatchEvent(new Event('input'));
         });
     }
 });
