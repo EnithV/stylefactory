@@ -134,9 +134,3 @@ fetch('components/footer/footer.html')
         document.getElementById('footer-placeholder').innerHTML = html;
     })
     .catch(err => console.error('Error cargando el footer:', err));
-
-/**
- * URL base del backend desplegado en Render.
- * Se utiliza en las peticiones fetch para conectar con la API real.
- */
-const API_BASE = "https://stylefactoryapi.onrender.com";
