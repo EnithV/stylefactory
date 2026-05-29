@@ -19,7 +19,8 @@ function actualizarNavbar() {
         
         // Mostrar enlace de administrador solo si el rol es admin
         if (adminLink) {
-            adminLink.style.display = usuario.rol === 'admin' ? 'block' : 'none';
+            var rol = (usuario.rol || '').toUpperCase();
+            adminLink.style.display = rol === 'ADMIN' ? 'block' : 'none';
         }
     } else {
         if (userInfo) userInfo.style.display = 'none';

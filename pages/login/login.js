@@ -65,3 +65,22 @@ fetch('../../components/footer/footer.html')
         document.getElementById('footer-placeholder').innerHTML = html;
     })
     .catch(err => console.error('Error cargando el footer:', err));
+
+/**
+ * Muestra aviso en la página de login tras un registro exitoso.
+ */
+(function mostrarAvisoRegistroExitoso() {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('registro') !== 'exito') return;
+
+    var columnaFormulario = document.querySelector('.content-body .col-md-6:last-child');
+    if (!columnaFormulario || document.getElementById('aviso-registro-exito')) return;
+
+    var aviso = document.createElement('div');
+    aviso.id = 'aviso-registro-exito';
+    aviso.className = 'aviso-registro-exito';
+    aviso.setAttribute('role', 'status');
+    aviso.textContent =
+        '¡Cuenta registrada! Ya puede iniciar sesión con su correo y contraseña.';
+    columnaFormulario.insertBefore(aviso, columnaFormulario.firstChild);
+})();

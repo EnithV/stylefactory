@@ -79,6 +79,9 @@ fetch('../../components/forms/contacto/formContacto.html')
     .then(res => res.text())
     .then(html => {
         document.getElementById('form-contacto').innerHTML = html;
+        if (typeof initFormContacto === 'function') {
+            initFormContacto();
+        }
     })
     .catch(err => console.error('Error cargando el formulario de contacto:', err));
 

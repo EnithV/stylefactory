@@ -1,115 +1,241 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('formRegistro');
-    const passwordInput = document.getElementById('password');
-    
-    if (passwordInput) {
-        passwordInput.addEventListener('input', validarRequisitosPassword);
-    }
-
-    form.addEventListener('submit', async function(event) {
-        event.preventDefault();
-        limpiarErrores();
-
-        const nombre = document.getElementById('nombreCompleto').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const telefono = document.getElementById('telefono').value.trim();
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        let isValid = true;
-
-        if (nombre === '' || nombre.length < 3) {
-            mostrarError('errorNombre', 'El nombre es obligatorio (mín. 3 caracteres)');
-            isValid = false;
-        }
-        if (!validarEmail(email)) {
-            mostrarError('errorEmail', 'Ingrese un correo electrónico válido');
-            isValid = false;
-        }
-        if (!validarTelefono(telefono)) {
-            mostrarError('errorTelefono', 'Ingrese un número de teléfono válido (mín. 7 dígitos)');
-            isValid = false;
-        }
-        if (!validarRequisitosPassword()) {
-            mostrarError('errorPassword', 'La contraseña no cumple los requisitos');
-            isValid = false;
-        }
-        if (password !== confirmPassword) {
-            mostrarError('errorConfirmPassword', 'Las contraseñas no coinciden');
-            isValid = false;
-        }
-
-        if (!isValid) return;
-
-        const requestBody = {
-            nombre: nombre,
-            correo: email,
-            telefono: telefono,
-            contrasena: password,
-            rol: 'CLIENTE'
-        };
-
-        try {
-            const response = await fetch(`${API_BASE}/auth/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => null);
-                throw new Error(errorData?.mensaje || errorData?.error || 'Error en el registro');
-            }
-
-            document.getElementById('mensajeExito').style.display = 'block';
-            setTimeout(() => {
-                window.parent.location.href = '../../pages/login/login.html';
-            }, 3000);
-        } catch (error) {
-            console.error('Error en registro:', error);
-            mostrarError('errorGeneral', '❌ ' + error.message);
-        }
-    });
-
-    function validarEmail(email) {
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return regex.test(email);
-    }
-
-    function validarTelefono(telefono) {
-        const digitos = telefono.replace(/\D/g, '');
-        return digitos.length >= 7;
-    }
+(function () {
+    var API_REGISTRO =
+        typeof API_BASE !== 'undefined'
+            ? API_BASE
+            : 'https://stylefactoryapi.onrender.com';
 
     function mostrarError(elementId, mensaje) {
-        const errorSpan = document.getElementById(elementId);
+        var errorSpan = document.getElementById(elementId);
         if (errorSpan) {
             errorSpan.textContent = mensaje;
             errorSpan.style.display = 'block';
         }
     }
 
+    function mostrarErrorGeneral(mensaje) {
+        var mensajeError = document.getElementById('mensajeError');
+        if (mensajeError) {
+            mensajeError.textContent = mensaje;
+            mensajeError.style.display = 'block';
+            mensajeError.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            return;
+        }
+        mostrarError('errorGeneral', mensaje);
+    }
+
     function limpiarErrores() {
-        document.querySelectorAll('.error').forEach(e => { e.textContent = ''; e.style.display = 'none'; });
+        document.querySelectorAll('.error').forEach(function (e) {
+            e.textContent = '';
+            e.style.display = 'none';
+        });
+        var mensajeError = document.getElementById('mensajeError');
+        if (mensajeError) {
+            mensajeError.textContent = '';
+            mensajeError.style.display = 'none';
+        }
+    }
+
+    function ocultarMensajeExito() {
+        var exito = document.getElementById('mensajeExito');
+        if (exito) exito.style.display = 'none';
     }
 
     function validarRequisitosPassword() {
-        const password = document.getElementById('password').value;
-        const requisitos = [
+        var passwordInput = document.getElementById('password');
+        if (!passwordInput) return false;
+
+        var password = passwordInput.value;
+        var requisitos = [
             { id: 'req-longitud', valido: password.length >= 8 },
             { id: 'req-mayuscula', valido: /[A-Z]/.test(password) },
             { id: 'req-minuscula', valido: /[a-z]/.test(password) },
             { id: 'req-numero', valido: /[0-9]/.test(password) },
             { id: 'req-especial', valido: /[@#$%*!?\-_]/.test(password) }
         ];
-        let todosCumplidos = true;
-        requisitos.forEach(req => {
-            const elem = document.getElementById(req.id);
+        var todosCumplidos = true;
+        requisitos.forEach(function (req) {
+            var elem = document.getElementById(req.id);
             if (elem) {
-                elem.innerHTML = (req.valido ? '✓' : '✗') + ' ' + elem.textContent.replace(/^[✓✗]\s*/, '');
+                elem.innerHTML =
+                    (req.valido ? '✓' : '✗') + ' ' + elem.textContent.replace(/^[✓✗]\s*/, '');
                 elem.className = 'requisito ' + (req.valido ? 'valid' : 'invalid');
             }
             if (!req.valido) todosCumplidos = false;
         });
         return todosCumplidos;
     }
-});
+
+    function validarFormularioRegistro() {
+        var nombre = document.getElementById('nombreCompleto').value;
+        var email = document.getElementById('email').value;
+        var telefono = document.getElementById('telefono').value;
+        var password = document.getElementById('password').value;
+        var confirmPassword = document.getElementById('confirmPassword').value;
+        var isValid = true;
+
+        if (typeof FormValidaciones === 'undefined') {
+            mostrarErrorGeneral('❌ No se cargaron las validaciones. Recargue la página.');
+            return false;
+        }
+
+        var resultadoNombre = FormValidaciones.validarNombre(nombre, { minLength: 3 });
+        if (!resultadoNombre.valido) {
+            mostrarError('errorNombre', resultadoNombre.mensaje);
+            isValid = false;
+        }
+
+        var resultadoEmail = FormValidaciones.validarEmail(email);
+        if (!resultadoEmail.valido) {
+            mostrarError('errorEmail', resultadoEmail.mensaje);
+            isValid = false;
+        }
+
+        var resultadoTelefono = FormValidaciones.validarTelefono(telefono, {
+            requerido: true,
+            minDigitos: 7,
+            maxDigitos: 15
+        });
+        if (!resultadoTelefono.valido) {
+            mostrarError('errorTelefono', resultadoTelefono.mensaje);
+            isValid = false;
+        }
+
+        if (password === '') {
+            mostrarError('errorPassword', 'La contraseña es obligatoria');
+            isValid = false;
+        } else if (!validarRequisitosPassword()) {
+            mostrarError('errorPassword', 'La contraseña no cumple los requisitos');
+            isValid = false;
+        }
+
+        if (confirmPassword === '') {
+            mostrarError('errorConfirmPassword', 'Debe confirmar la contraseña');
+            isValid = false;
+        } else if (password !== confirmPassword) {
+            mostrarError('errorConfirmPassword', 'Las contraseñas no coinciden');
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    function mostrarExitoRegistro() {
+        var exito = document.getElementById('mensajeExito');
+        if (exito) {
+            exito.textContent =
+                '¡Cuenta registrada con éxito! Redirigiendo al inicio de sesión...';
+            exito.style.display = 'block';
+            exito.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    function redirigirAlLogin() {
+        var url = '../../pages/login/login.html?registro=exito';
+        if (window.parent && window.parent !== window) {
+            window.parent.location.href = url;
+        } else {
+            window.location.href = url;
+        }
+    }
+
+    function initRegistroForm() {
+        var form = document.getElementById('formRegistro');
+        if (!form || form.dataset.registroInicializado === 'true') return;
+        form.dataset.registroInicializado = 'true';
+
+        var passwordInput = document.getElementById('password');
+        var nombreInput = document.getElementById('nombreCompleto');
+        var telefonoInput = document.getElementById('telefono');
+
+        if (typeof FormValidaciones !== 'undefined') {
+            if (nombreInput) {
+                FormValidaciones.configurarValidacionNombreEnTiempoReal(nombreInput, 'errorNombre');
+            }
+            if (telefonoInput) {
+                FormValidaciones.configurarValidacionTelefonoEnTiempoReal(telefonoInput, 'errorTelefono');
+            }
+        }
+
+        if (passwordInput) {
+            passwordInput.addEventListener('input', validarRequisitosPassword);
+        }
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            limpiarErrores();
+            ocultarMensajeExito();
+
+            if (!validarFormularioRegistro()) return;
+
+            var boton = form.querySelector('.btn-registro');
+            var textoBoton = boton ? boton.textContent : 'Registrarse';
+            var registroExitoso = false;
+            if (boton) {
+                boton.disabled = true;
+                boton.textContent = 'Registrando...';
+            }
+
+            var requestBody = {
+                nombre: document.getElementById('nombreCompleto').value.trim(),
+                correo: document.getElementById('email').value.trim(),
+                telefono: document.getElementById('telefono').value.trim(),
+                contrasena: document.getElementById('password').value,
+                rol: 'CLIENTE'
+            };
+
+            fetch(API_REGISTRO + '/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            })
+                .then(function (response) {
+                    if (!response.ok) {
+                        return response.json().catch(function () {
+                            return null;
+                        }).then(function (errorData) {
+                            var mensaje =
+                                (errorData && (errorData.error || errorData.mensaje)) ||
+                                'No se pudo completar el registro';
+
+                            if (
+                                typeof FormValidaciones !== 'undefined' &&
+                                FormValidaciones.esCorreoDuplicado(response, errorData)
+                            ) {
+                                mostrarError('errorEmail', mensaje);
+                            } else {
+                                mostrarErrorGeneral('❌ ' + mensaje);
+                            }
+                            throw new Error('registro_fallido');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(function () {
+                    registroExitoso = true;
+                    mostrarExitoRegistro();
+                    setTimeout(redirigirAlLogin, 2500);
+                })
+                .catch(function (error) {
+                    if (error && error.message === 'registro_fallido') return;
+                    console.error('Error en registro:', error);
+                    var textoError =
+                        typeof mensajeErrorConexion === 'function'
+                            ? mensajeErrorConexion(error)
+                            : 'No se pudo conectar con el servidor. Intente más tarde.';
+                    mostrarErrorGeneral('❌ ' + textoError);
+                })
+                .finally(function () {
+                    if (boton && !registroExitoso) {
+                        boton.disabled = false;
+                        boton.textContent = textoBoton;
+                    }
+                });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initRegistroForm);
+    } else {
+        initRegistroForm();
+    }
+})();

@@ -11,7 +11,8 @@
         >
 
             <div class="input-group">
-                <input type="text" id="nombre" name="nombre" required placeholder="">
+                <input type="text" id="nombre" name="nombre" required placeholder=""
+                    autocomplete="name" inputmode="text">
                 <label>Nombre</label>
                 <span class="error" id="errorNombre"></span>
             </div>
@@ -23,7 +24,7 @@
             </div>
 
             <div class="input-group">
-                <input type="tel" id="telefono" name="telefono" placeholder="">
+                <input type="tel" id="telefono" name="telefono" placeholder="" inputmode="tel" autocomplete="tel">
                 <label>Teléfono</label>
                 <span class="error" id="errorTelefono"></span>
             </div>
@@ -34,10 +35,8 @@
                 <span class="error" id="errorMensaje"></span>
             </div>
 
-            <div id="mensajeEnvio" class="mensaje-exito" style="display: none;">
-                ¡Gracias! Tu mensaje ha sido enviado correctamente. Te responderemos pronto.
-            </div>
-            
+            <span class="error" id="errorGeneral"></span>
+
             <div class="d-flex ">
                 <button type="submit" class="btn-enviar">Enviar</button>
             </div>
@@ -53,4 +52,3 @@
 
     </section>
 
-    <script src="formContacto.js"></script>
