@@ -130,10 +130,15 @@
     }
 
     function redirigirAlLogin() {
-        var url =
-            typeof urlApp === "function"
-                ? urlApp("/pages/login/login.html?registro=exito")
-                : "../../pages/login/login.html?registro=exito";
+        var url;
+        if (typeof ReservaPendiente !== "undefined" && ReservaPendiente.debeRetomar()) {
+            url = ReservaPendiente.urlLoginConRetorno();
+        } else {
+            url =
+                typeof urlApp === "function"
+                    ? urlApp("/pages/login/login.html?registro=exito")
+                    : "../../pages/login/login.html?registro=exito";
+        }
         if (window.parent && window.parent !== window) {
             window.parent.location.href = url;
         } else {

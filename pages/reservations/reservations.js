@@ -100,12 +100,12 @@ document.addEventListener('DOMContentLoaded', renderizarReservas);
  * Los datos se muestran en un carrusel para que el usuario elija.
  */
 const estilistas = [
-  { id: 1, nombre: "Ana García", especialidad: "Colorimetría", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336588/Sty1_wj2bmn.png", disponibilidad: { "2026-04-28": ["09:00", "10:00", "14:00", "15:00"], "2026-04-29": ["09:00", "11:00", "16:00"], "2026-04-30": ["10:00", "13:00", "17:00"], "2026-05-02": ["09:00", "10:00", "11:00"], "2026-05-03": ["14:00", "15:00", "16:00"] } },
-  { id: 2, nombre: "Laura Martínez", especialidad: "Cortes y peinados", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336622/Sty2_z1upkm.png", disponibilidad: { "2026-04-28": ["08:00", "09:00", "11:00"], "2026-04-29": ["10:00", "12:00", "15:00"], "2026-04-30": ["09:00", "11:00", "14:00"], "2026-05-02": ["13:00", "15:00", "17:00"], "2026-05-03": ["09:00", "10:00", "12:00"] } },
-  { id: 3, nombre: "Camila Rodríguez", especialidad: "Tratamientos capilares", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336764/Sty3_hk8sdy.png", disponibilidad: { "2026-04-28": ["10:00", "12:00", "16:00"], "2026-04-29": ["09:00", "13:00", "15:00"], "2026-04-30": ["11:00", "14:00", "18:00"], "2026-05-02": ["08:00", "09:00", "10:00"], "2026-05-03": ["13:00", "14:00", "15:00"] } },
-  { id: 4, nombre: "Valentina López", especialidad: "Alisados y keratina", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336831/Sty4_yhgjef.png", disponibilidad: { "2026-04-28": ["09:00", "11:00", "13:00"], "2026-04-29": ["10:00", "12:00", "16:00"], "2026-04-30": ["08:00", "10:00", "12:00"], "2026-05-02": ["14:00", "16:00", "18:00"], "2026-05-03": ["09:00", "11:00", "13:00"] } },
-  { id: 5, nombre: "Daniel Herrera", especialidad: "Corte caballero y barba", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336977/Sty5_wnafrw.png", disponibilidad: { "2026-04-28": ["09:00", "10:00", "11:00", "15:00"], "2026-04-29": ["10:00", "12:00", "14:00"], "2026-04-30": ["09:00", "11:00", "13:00"], "2026-05-02": ["08:00", "09:00", "10:00"], "2026-05-03": ["16:00", "17:00", "18:00"] } },
-  { id: 6, nombre: "Santiago Ruiz", especialidad: "Barbería clásica y perfilado de barba", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777337017/Sty6_vgztvb.png", disponibilidad: { "2026-04-28": ["08:00", "09:00", "12:00"], "2026-04-29": ["11:00", "13:00", "15:00"], "2026-04-30": ["10:00", "12:00", "14:00"], "2026-05-02": ["09:00", "11:00", "13:00"], "2026-05-03": ["14:00", "16:00", "18:00"] } },
+  { id: 1, empleadoId: 1, nombre: "Ana García", especialidad: "Colorimetría", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336588/Sty1_wj2bmn.png", disponibilidad: { "2026-04-28": ["09:00", "10:00", "14:00", "15:00"], "2026-04-29": ["09:00", "11:00", "16:00"], "2026-04-30": ["10:00", "13:00", "17:00"], "2026-05-02": ["09:00", "10:00", "11:00"], "2026-05-03": ["14:00", "15:00", "16:00"] } },
+  { id: 2, empleadoId: 2, nombre: "Laura Martínez", especialidad: "Cortes y peinados", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336622/Sty2_z1upkm.png", disponibilidad: { "2026-04-28": ["08:00", "09:00", "11:00"], "2026-04-29": ["10:00", "12:00", "15:00"], "2026-04-30": ["09:00", "11:00", "14:00"], "2026-05-02": ["13:00", "15:00", "17:00"], "2026-05-03": ["09:00", "10:00", "12:00"] } },
+  { id: 3, empleadoId: 3, nombre: "Camila Rodríguez", especialidad: "Tratamientos capilares", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336764/Sty3_hk8sdy.png", disponibilidad: { "2026-04-28": ["10:00", "12:00", "16:00"], "2026-04-29": ["09:00", "13:00", "15:00"], "2026-04-30": ["11:00", "14:00", "18:00"], "2026-05-02": ["08:00", "09:00", "10:00"], "2026-05-03": ["13:00", "14:00", "15:00"] } },
+  { id: 4, empleadoId: 4, nombre: "Valentina López", especialidad: "Alisados y keratina", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336831/Sty4_yhgjef.png", disponibilidad: { "2026-04-28": ["09:00", "11:00", "13:00"], "2026-04-29": ["10:00", "12:00", "16:00"], "2026-04-30": ["08:00", "10:00", "12:00"], "2026-05-02": ["14:00", "16:00", "18:00"], "2026-05-03": ["09:00", "11:00", "13:00"] } },
+  { id: 5, empleadoId: 5, nombre: "Daniel Herrera", especialidad: "Corte caballero y barba", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336977/Sty5_wnafrw.png", disponibilidad: { "2026-04-28": ["09:00", "10:00", "11:00", "15:00"], "2026-04-29": ["10:00", "12:00", "14:00"], "2026-04-30": ["09:00", "11:00", "13:00"], "2026-05-02": ["08:00", "09:00", "10:00"], "2026-05-03": ["16:00", "17:00", "18:00"] } },
+  { id: 6, empleadoId: 6, nombre: "Santiago Ruiz", especialidad: "Barbería clásica y perfilado de barba", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777337017/Sty6_vgztvb.png", disponibilidad: { "2026-04-28": ["08:00", "09:00", "12:00"], "2026-04-29": ["11:00", "13:00", "15:00"], "2026-04-30": ["10:00", "12:00", "14:00"], "2026-05-02": ["09:00", "11:00", "13:00"], "2026-05-03": ["14:00", "16:00", "18:00"] } },
 ];
 
 /**
@@ -296,4 +296,65 @@ document.getElementById("nextMonth").addEventListener("click", () => {
   renderCalendario();
   document.getElementById("horasFechaLabel").textContent = "Selecciona un día disponible";
   document.getElementById("horasGrid").innerHTML = `<p class="text-muted" style="font-size:13px;">Los horarios aparecerán al elegir una fecha.</p>`;
+});
+
+window.estadoReserva = estado;
+
+/**
+ * Restaura estilista, fecha y hora tras registro o login (reserva pendiente).
+ */
+function restaurarReservaPendiente() {
+  if (typeof ReservaPendiente === "undefined") return;
+
+  var params = new URLSearchParams(window.location.search);
+  if (params.get("retomar") !== "1" && !ReservaPendiente.debeRetomar()) return;
+
+  var pendiente = ReservaPendiente.obtener();
+  if (!pendiente) return;
+
+  if (pendiente.servicio) {
+    localStorage.setItem("servicioSeleccionado", JSON.stringify(pendiente.servicio));
+    renderizarReservas();
+  }
+
+  if (typeof pendiente.anio === "number") estado.anio = pendiente.anio;
+  if (typeof pendiente.mes === "number") estado.mes = pendiente.mes;
+
+  var estilista =
+    estilistas.find(function (e) {
+      return e.id === pendiente.estilista.id;
+    }) || pendiente.estilista;
+
+  document.getElementById("seccionCalendario").style.display = "block";
+  initFechaHora(estilista);
+
+  if (pendiente.fecha) {
+    seleccionarFecha(pendiente.fecha);
+  }
+  if (pendiente.hora) {
+    seleccionarHora(pendiente.hora);
+  }
+
+  ReservaPendiente.marcarRetomado();
+
+  var aviso = document.getElementById("aviso-reserva-retomada");
+  if (aviso) {
+    aviso.style.display = "block";
+    aviso.textContent =
+      "Continúa donde lo dejaste. Revisa tu selección y confirma la reserva.";
+  }
+
+  document.getElementById("seccionCalendario").scrollIntoView({ behavior: "smooth" });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  var btnRegistro = document.getElementById("btnIrRegistroReserva");
+  var btnLogin = document.getElementById("btnIrLoginReserva");
+  if (btnRegistro) {
+    btnRegistro.href = ReservaPendiente.urlRegistroConRetorno();
+  }
+  if (btnLogin) {
+    btnLogin.href = ReservaPendiente.urlLoginConRetorno();
+  }
+  setTimeout(restaurarReservaPendiente, 200);
 });

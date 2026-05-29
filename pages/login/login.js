@@ -71,10 +71,22 @@ fetch('../../components/footer/footer.html')
  */
 (function mostrarAvisoRegistroExitoso() {
     var params = new URLSearchParams(window.location.search);
-    if (params.get('registro') !== 'exito') return;
-
     var columnaFormulario = document.querySelector('.content-body .col-md-6:last-child');
-    if (!columnaFormulario || document.getElementById('aviso-registro-exito')) return;
+    if (!columnaFormulario) return;
+
+    if (params.get('retorno') === 'reserva') {
+        if (document.getElementById('aviso-retomar-reserva')) return;
+        var avisoReserva = document.createElement('div');
+        avisoReserva.id = 'aviso-retomar-reserva';
+        avisoReserva.className = 'aviso-registro-exito';
+        avisoReserva.setAttribute('role', 'status');
+        avisoReserva.textContent =
+            'Inicia sesión para continuar con tu reserva. Tu selección sigue guardada.';
+        columnaFormulario.insertBefore(avisoReserva, columnaFormulario.firstChild);
+    }
+
+    if (params.get('registro') !== 'exito') return;
+    if (document.getElementById('aviso-registro-exito')) return;
 
     var aviso = document.createElement('div');
     aviso.id = 'aviso-registro-exito';

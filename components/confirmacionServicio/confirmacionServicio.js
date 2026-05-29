@@ -62,55 +62,163 @@ function actualizarFechaHora(fecha, hora) {
   renderizar();
 }
 
-function confirmarReserva() {
-  const servicio = JSON.parse(localStorage.getItem('servicioSeleccionado'));
-  const usuarioLogueado = JSON.parse(localStorage.getItem('usuarioLogueado'));
+function obtenerDatosReservaDesdePagina() {
+  var servicio = JSON.parse(localStorage.getItem("servicioSeleccionado") || "null");
+  var estadoPagina = window.estadoReserva || null;
 
-  const nuevaReserva = {
-    cliente: usuarioLogueado?.nombre ?? 'Invitado',
-    servicio: {
-      nombre: servicio?.nombre?.toUpperCase() || reservaActual.servicio.nombre,
-      precio: servicio?.precio || reservaActual.servicio.precio
-    },
-    profesional: reservaActual.profesional,
-    fecha: reservaActual.fecha,
-    hora: reservaActual.hora
+  if (!servicio || !estadoPagina || !estadoPagina.estilista || !estadoPagina.fecha || !estadoPagina.hora) {
+    return null;
+  }
+
+  return {
+    servicio: servicio,
+    estilista: estadoPagina.estilista,
+    fecha: estadoPagina.fecha,
+    hora: estadoPagina.hora,
+    anio: estadoPagina.anio,
+    mes: estadoPagina.mes,
+  };
+}
+
+function mostrarModalSesionRequerida() {
+  var modalEl = document.getElementById("modalSesionReserva");
+  if (!modalEl || typeof bootstrap === "undefined") {
+    var irRegistro = confirm(
+      "Para completar la reserva necesitas una cuenta. Tu selección se guardará.\n\n¿Ir a registrarte?"
+    );
+    if (irRegistro) {
+      window.location.href = ReservaPendiente.urlRegistroConRetorno();
+    }
+    return;
+  }
+  var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  modal.show();
+}
+
+function guardarProgresoYPedirSesion() {
+  var datos = obtenerDatosReservaDesdePagina();
+  if (!datos) {
+    alert("Completa la selección de estilista, fecha y hora antes de confirmar.");
+    return;
+  }
+  ReservaPendiente.guardar(datos);
+  mostrarModalSesionRequerida();
+}
+
+async function confirmarReserva() {
+  var sesion = ReservaPendiente.obtenerSesionActiva();
+  if (!sesion || !localStorage.getItem("token")) {
+    guardarProgresoYPedirSesion();
+    return;
+  }
+
+  var datos = obtenerDatosReservaDesdePagina();
+  if (!datos) {
+    alert("Completa la selección de estilista, fecha y hora antes de confirmar.");
+    return;
+  }
+
+  var usuarioId = sesion.id;
+  if (!usuarioId) {
+    alert("No se encontró el identificador de usuario. Cierre sesión e ingrese de nuevo.");
+    return;
+  }
+
+  var empleadoId = datos.estilista.empleadoId || datos.estilista.id;
+  var servicioId = datos.servicio.id;
+  var boton = elementos.btnConfirmar;
+  var textoOriginal = boton ? boton.textContent : "";
+
+  if (boton) {
+    boton.disabled = true;
+    boton.textContent = "CONFIRMANDO...";
+  }
+
+  var cuerpo = {
+    fecha: datos.fecha,
+    hora: ReservaPendiente.normalizarHora(datos.hora),
+    estado: "PENDIENTE",
+    usuarioId: usuarioId,
+    empleadoId: empleadoId,
+    servicioId: servicioId,
   };
 
-  const reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+  try {
+    var respuesta = await fetch(API_BASE + "/reservas", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("token"),
+      },
+      body: JSON.stringify(cuerpo),
+    });
 
-  // Genera id automático
-  const maxId = reservas.length > 0 ? Math.max(...reservas.map(r => r.id || 0)) : 0;
-  nuevaReserva.id = maxId + 1;
+    if (!respuesta.ok) {
+      var errorData = await respuesta.json().catch(function () {
+        return null;
+      });
+      var mensaje =
+        (errorData && (errorData.message || errorData.error || errorData.mensaje)) ||
+        "No se pudo registrar la reserva en el servidor.";
+      throw new Error(mensaje);
+    }
 
-  reservas.push(nuevaReserva);
-  localStorage.setItem("reservas", JSON.stringify(reservas));
+    var reservaCreada = await respuesta.json();
+    ReservaPendiente.limpiar();
+    localStorage.removeItem("servicioSeleccionado");
 
-  // Limpia el servicio seleccionado
-  localStorage.removeItem('servicioSeleccionado');
+    var nombreServicio =
+      reservaCreada.nombreServicio || datos.servicio.nombre.toUpperCase();
+    var nombreProfesional =
+      reservaCreada.nombreEmpleado || datos.estilista.nombre.toUpperCase();
 
-   // Mostrar modal con los mismos datos que la alerta original
-const mensaje = `
-  <strong style="color:#28a745;">RESERVA CONFIRMADA</strong><br><br>
-  ${nuevaReserva.servicio.nombre}<br>
-  ${nuevaReserva.profesional.nombre}<br>
-  ${nuevaReserva.fecha} / ${nuevaReserva.hora}<br>
-  ${formatearPrecio(nuevaReserva.servicio.precio)}
-`;
+    var mensaje =
+      '<strong style="color:#28a745;">RESERVA CONFIRMADA</strong><br><br>' +
+      nombreServicio +
+      "<br>" +
+      nombreProfesional +
+      "<br>" +
+      reservaActual.fecha +
+      " / " +
+      reservaActual.hora +
+      "<br>" +
+      formatearPrecio(datos.servicio.precio);
 
-document.getElementById("mensajeConfirmacion").innerHTML = mensaje;
+    document.getElementById("mensajeConfirmacion").innerHTML = mensaje;
 
-// Mostrar el modal confirmado
-const modalConfirmacion = new bootstrap.Modal(document.getElementById("modalConfirmacionReserva"));
-modalConfirmacion.show();
+    var modalConfirmacion = new bootstrap.Modal(
+      document.getElementById("modalConfirmacionReserva")
+    );
+    modalConfirmacion.show();
 
-// Cuando se cierre el modal, redirige a Acerca de Nosotros
-document.getElementById("modalConfirmacionReserva")
-  .addEventListener("hidden.bs.modal", () => {
-    window.location.href = '/pages/aboutUs/aboutUs.html';
-  });
-
-  return nuevaReserva;
+    document
+      .getElementById("modalConfirmacionReserva")
+      .addEventListener(
+        "hidden.bs.modal",
+        function handler() {
+          document
+            .getElementById("modalConfirmacionReserva")
+            .removeEventListener("hidden.bs.modal", handler);
+          window.location.href =
+            typeof urlApp === "function"
+              ? urlApp("/pages/aboutUs/aboutUs.html")
+              : "../aboutUs/aboutUs.html";
+        },
+        { once: true }
+      );
+  } catch (error) {
+    console.error("Error al confirmar reserva:", error);
+    var texto =
+      typeof mensajeErrorConexion === "function"
+        ? mensajeErrorConexion(error)
+        : error.message;
+    alert("❌ " + texto);
+  } finally {
+    if (boton) {
+      boton.disabled = false;
+      boton.textContent = textoOriginal;
+    }
+  }
 }
 
 window.ConfirmacionServicio = {

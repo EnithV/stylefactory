@@ -21,6 +21,8 @@
 
   <header id="header" class="sticky-top"></header>
 
+  <div id="aviso-reserva-retomada" class="alert alert-info text-center mx-auto my-3" style="display:none; max-width:720px;" role="status"></div>
+
   <!-- PASO 1: SERVICIO SELECCIONADO -->
   <section class="seccion-reserva py-4" id="seccionServicio">
     <h2 class="card-title text-center mb-2">Tu servicio</h2>
@@ -112,7 +114,7 @@
                   <span class="total-valor" id="confTotal">$50.000</span>
                 </div>
                 <button class="btn-confirmar" id="btnConfirmarReserva">
-                  CONFIRMADO
+                  CONFIRMAR RESERVA
                 </button>
               </div>
             </div>
@@ -130,10 +132,30 @@
     integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
     crossorigin="anonymous"></script>
   <!-- Scripts locales con rutas relativas -->
-  <script src="../../components/confirmacionServicio/confirmacionServicio.js"></script>
   <script src="../../assets/js/config.js"></script>
+  <script src="../../assets/js/reservaPendiente.js"></script>
+  <script src="../../components/confirmacionServicio/confirmacionServicio.js"></script>
   <script src="reservations.js"></script>
 </body>
+
+<!-- Modal: sesión requerida para confirmar -->
+<div class="modal fade" id="modalSesionReserva" tabindex="-1" aria-labelledby="modalSesionReservaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalSesionReservaLabel">Cuenta necesaria</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        Para completar tu reserva necesitas una cuenta. Tu selección de servicio, estilista, fecha y hora se guardará mientras te registras o inicias sesión.
+      </div>
+      <div class="modal-footer">
+        <a href="#" id="btnIrRegistroReserva" class="btn btn-outline-primary">Registrarse</a>
+        <a href="#" id="btnIrLoginReserva" class="btn btn-primary">Iniciar sesión</a>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Modal de confirmación de reserva -->
 <div class="modal fade" id="modalConfirmacionReserva" tabindex="-1" aria-labelledby="modalConfirmacionLabel" aria-hidden="true">

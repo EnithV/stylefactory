@@ -110,6 +110,7 @@
                     localStorage.setItem(
                         'usuarioLogueado',
                         JSON.stringify({
+                            id: data.id,
                             nombre: data.nombre,
                             correo: data.correo,
                             rol: data.rol
@@ -123,7 +124,12 @@
                     }
 
                     setTimeout(function () {
-                        var url = obtenerUrlRedireccion(data.rol);
+                        var url;
+                        if (typeof ReservaPendiente !== 'undefined' && ReservaPendiente.debeRetomar()) {
+                            url = ReservaPendiente.urlPaginaReservas();
+                        } else {
+                            url = obtenerUrlRedireccion(data.rol);
+                        }
                         if (window.parent && window.parent !== window) {
                             window.parent.location.href = url;
                         } else {
