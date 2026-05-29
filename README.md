@@ -1,172 +1,208 @@
-# Style Factory — Frontend
+# 💈 Style Factory – Frontend
 
-Sitio web de **Style Factory**, salón de belleza y bienestar. Los clientes pueden conocer servicios, registrarse, iniciar sesión y gestionar reservas. El panel de administración concentra el trabajo del equipo del salón.
+Interfaz web de **Style Factory**, salón de belleza y bienestar. Aquí el cliente conoce los servicios, se registra, inicia sesión, reserva citas y —con el rol adecuado— accede al panel de administración.
 
-El proyecto es **HTML, CSS y JavaScript** puro, sin frameworks de interfaz. Los componentes se cargan por secciones (`fetch` + plantillas) y la autenticación se resuelve contra una API REST desplegada por separado.
+El sitio está hecho con **HTML, CSS y JavaScript** puro. No hay React ni Vue: los componentes (navbar, footer, formularios) se cargan con `fetch` y la autenticación se delega al API REST del backend.
 
-**Sitio en producción:** [https://enithv.github.io/stylefactory/](https://enithv.github.io/stylefactory/)
+## 🚀 Tecnologías
 
-**API (backend):** [https://stylefactoryapi.onrender.com](https://stylefactoryapi.onrender.com) — repositorio [stylefactory-backend](https://github.com/EnithV/stylefactory-backend)
-
----
-
-## Contenido del sitio
-
-| Sección | Ruta | Descripción |
-|---------|------|-------------|
-| Inicio | `/index.html` | Banner, servicios destacados, reseñas |
-| Catálogo | `/pages/catalogoServicios/` | Listado de servicios |
-| Nosotros | `/pages/aboutUs/` | Información del salón |
-| Contacto | `/pages/contact/` | Formulario (Formspree) y mapa |
-| Login | `/pages/login/` | Acceso de clientes y administradores |
-| Registro | `/pages/registro/` | Alta de nuevos clientes |
-| Reservas | `/pages/reservations/` | Flujo de reserva (usuario logueado) |
-| Admin | `/pages/admin/` | Panel, servicios y reservas |
-
----
-
-## Stack técnico
-
-- **HTML5** y **CSS3** (Bootstrap 5.3.8 como base responsive)
+- **HTML5** + **CSS3**
+- **Bootstrap 5.3.8** (layout responsive)
 - **JavaScript** (ES6+, sin bundler)
-- **Font Awesome** e iconos de Google Fonts (Montserrat, Playfair Display)
-- **Google Maps** en la página de contacto
-- **Formspree** para el envío del formulario de contacto
-- **JWT** vía API para login y registro
+- **Google Fonts** — Montserrat, Playfair Display
+- **Font Awesome 6** (iconos)
+- **Google Maps** (página de contacto)
+- **Formspree** (formulario de contacto)
+- **JWT** — sesión vía API (`stylefactory-backend`)
 
----
+## 🌐 Enlaces del proyecto
 
-## Estructura del repositorio
+| Recurso | URL |
+|---------|-----|
+| **Sitio publicado** | https://enithv.github.io/stylefactory/ |
+| **Repositorio frontend** | https://github.com/EnithV/stylefactory |
+| **API (Render)** | https://stylefactoryapi.onrender.com |
+| **Repositorio backend** | https://github.com/EnithV/stylefactory-backend |
+| **Swagger** | https://stylefactoryapi.onrender.com/swagger-ui/index.html |
+
+## 📁 Estructura del proyecto
 
 ```
 stylefactory/
-├── index.html                 # Página principal
+├── index.html                      # Home
 ├── assets/
-│   ├── css/                   # Estilos globales
+│   ├── css/
+│   │   └── main.css
 │   └── js/
-│       ├── config.js          # URL del API y utilidades de conexión
-│       ├── formValidaciones.js # Reglas compartidas de formularios
-│       └── main.js            # Navbar, sesión y carga de secciones en home
-├── components/                # Piezas reutilizables (HTML + CSS + JS)
-│   ├── navbar/
+│       ├── config.js               # API_BASE, rutas GitHub Pages, utilidades
+│       ├── formValidaciones.js     # Validaciones compartidas de formularios
+│       └── main.js                 # Navbar, sesión, carga de secciones en home
+├── components/
+│   ├── navbar/                     # Barra de navegación
 │   ├── footer/
-│   ├── forms/                 # Login, registro, contacto, reserva, etc.
+│   ├── forms/
+│   │   ├── loginUsuario/           # Login (iframe en pages/login)
+│   │   ├── registroUsuario/        # Registro (iframe en pages/registro)
+│   │   ├── contacto/
+│   │   ├── reserva/
+│   │   ├── passwordToggle.js       # Mostrar/ocultar contraseña
+│   │   └── ...
 │   ├── bannerInicio/
 │   ├── ServiciosDestacados/
-│   └── ...
-└── pages/                     # Vistas completas por módulo
+│   └── review/
+└── pages/
     ├── login/
     ├── registro/
     ├── contact/
     ├── catalogoServicios/
+    ├── aboutUs/
     ├── reservations/
-    └── admin/
+    └── admin/                      # Panel, listas de servicios y reservas
 ```
 
-Las rutas del menú usan el prefijo **`/stylefactory/`** porque GitHub Pages publica este repositorio como sitio de proyecto bajo `enithv.github.io`.
+Las rutas del menú llevan el prefijo **`/stylefactory/`** porque GitHub Pages publica este repo como sitio de proyecto bajo `enithv.github.io`.
 
----
+## 🗺️ Mapa del sitio
 
-## Cómo funciona la sesión
+| Sección | Ruta | Descripción |
+|---------|------|-------------|
+| Inicio | `/index.html` | Banner, servicios destacados, reseñas |
+| Servicios | `/pages/catalogoServicios/` | Catálogo completo |
+| Nosotros | `/pages/aboutUs/` | Historia y propuesta del salón |
+| Contacto | `/pages/contact/` | Formulario + mapa |
+| Login | `/pages/login/` | Inicio de sesión |
+| Registro | `/pages/registro/` | Alta de clientes |
+| Reservas | `/pages/reservations/` | Flujo de reserva (sesión activa) |
+| Admin | `/pages/admin/` | Panel de control |
 
-1. El usuario envía correo y contraseña desde el formulario de login (cargado en un `iframe` dentro de `pages/login/`).
-2. El frontend hace `POST` a `{API_BASE}/auth/login`.
-3. Si la respuesta es correcta, se guardan en `localStorage`:
-   - `token` — JWT para peticiones futuras al API
-   - `usuarioLogueado` — objeto con `nombre`, `correo` y `rol`
-4. Se redirige al inicio (cliente) o al panel de control (rol `ADMIN`).
-5. Cada página que incluye el navbar ejecuta `actualizarNavbar()` y muestra **«Hola, {nombre}»** cuando hay sesión activa.
+## 🔐 Sesión y autenticación
 
-El registro sigue el mismo criterio: validación en el cliente, envío a `POST /auth/register` y redirección al login con mensaje de cuenta creada.
+### Flujo de login
 
----
+1. El usuario completa el formulario en `components/forms/loginUsuario/` (embebido en un **iframe** dentro de `pages/login/`).
+2. El frontend envía `POST {API_BASE}/auth/login` con `correo` y `contrasena`.
+3. Si el API responde bien, se guarda en `localStorage`:
+   - `token` — JWT para peticiones protegidas
+   - `usuarioLogueado` — `{ nombre, correo, rol }`
+4. Redirección a `/index.html` (cliente) o al panel admin (rol `ADMIN`).
+5. El navbar ejecuta `actualizarNavbar()` y muestra **«Hola, {nombre}»**.
 
-## Validaciones en formularios
+### Flujo de registro
 
-La lógica común vive en `assets/js/formValidaciones.js`:
+Validación en cliente → `POST /auth/register` → mensaje de éxito → redirección a login con aviso de cuenta creada.
 
-- **Nombre:** solo letras; aviso en tiempo real si se escribe un número o símbolo no permitido.
-- **Correo:** formato válido y campo obligatorio donde aplica.
-- **Teléfono:** solo dígitos y separadores habituales (`+`, guiones, espacios); rechazo inmediato de letras.
-- **Contraseña (registro):** requisitos de longitud, mayúsculas, números y carácter especial; confirmación debe coincidir.
-- **Mostrar/ocultar contraseña:** componente `passwordToggle.js` en login y registro.
+### Diagrama (login)
 
-Los formularios de login y registro usan `novalidate` para controlar los mensajes en español sin depender del tooltip nativo del navegador dentro del iframe.
+```mermaid
+sequenceDiagram
+    participant U as Usuario
+    participant F as Formulario login
+    participant API as API Render
+    participant LS as localStorage
+    participant H as Home
 
----
+    U->>F: Correo + contraseña
+    F->>F: Validación (email, campos)
+    F->>API: POST /auth/login
+    API-->>F: token, nombre, rol
+    F->>LS: Guardar token y usuarioLogueado
+    F->>H: Redirigir (urlApp /index.html)
+    H->>H: actualizarNavbar() → Hola, nombre
+```
 
-## Requisitos para desarrollo local
+## ✅ Validaciones de formularios
 
-- Navegador actualizado (Chrome, Firefox o Edge).
-- Un servidor estático local. **No abras los HTML con doble clic** (`file://`); las peticiones al API y la carga de componentes fallan o se bloquean por CORS.
+Centralizadas en `assets/js/formValidaciones.js`:
 
-Opciones habituales:
+| Campo | Regla |
+|-------|--------|
+| Nombre | Solo letras; aviso en tiempo real si hay números |
+| Correo | Obligatorio + formato válido |
+| Teléfono | Solo dígitos y separadores (`+`, `-`, espacios); sin letras |
+| Contraseña | Mín. 8 caracteres, mayúscula, minúscula, número y símbolo |
+| Confirmación | Debe coincidir con la contraseña |
 
-- Extensión **Live Server** en VS Code
-- `npx serve .` en la raíz del proyecto
-- Cualquier servidor que sirva la carpeta por `http://localhost`
+Login y registro usan **`novalidate`** para mostrar errores en español (evita tooltips nativos ocultos dentro del iframe).
 
----
+**Contraseña visible:** `passwordToggle.js` + icono de ojo en login y registro.
 
-## Puesta en marcha local
+## ⚙️ Configuración (`assets/js/config.js`)
+
+```javascript
+const API_BASE = "https://stylefactoryapi.onrender.com";
+const FRONTEND_BASE_URL = "https://enithv.github.io/stylefactory";
+const GITHUB_PAGES_BASE_PATH = "/stylefactory";
+```
+
+Funciones útiles:
+
+- `obtenerBaseAplicacion()` — detecta `/stylefactory` en GitHub Pages o raíz en local
+- `urlApp('/index.html')` — arma rutas absolutas para redirecciones tras login/registro
+- `mensajeErrorConexion(error)` — texto claro ante fallos de red o CORS
+
+Para desarrollo contra API local, cambia `API_BASE` (ej. `http://localhost:8081`) y verifica CORS en el backend.
+
+## 🛠️ Desarrollo local
+
+### Requisitos
+
+- Navegador reciente (Chrome, Firefox, Edge)
+- Servidor estático (**Live Server**, `npx serve .`, etc.)
+
+> **Importante:** no abras los `.html` con doble clic (`file://`). El API y la carga de componentes fallan o se bloquean por CORS.
+
+### Pasos
 
 ```bash
 git clone https://github.com/EnithV/stylefactory.git
 cd stylefactory
 ```
 
-Abre la carpeta con Live Server (o equivalente). La URL será similar a:
+Abre la carpeta con Live Server. URL típica:
 
 `http://127.0.0.1:5500/stylefactory/index.html`
 
-El archivo `assets/js/config.js` define la base del API:
+## 📤 Despliegue (GitHub Pages)
 
-```javascript
-const API_BASE = "https://stylefactoryapi.onrender.com";
-const FRONTEND_BASE_URL = "https://enithv.github.io/stylefactory";
-```
+1. Repo **EnithV/stylefactory**, rama `main`
+2. **Settings → Pages → Deploy from branch**
+3. Carpeta **`/ (root)`**
+4. Sitio en https://enithv.github.io/stylefactory/
 
-Para apuntar a un backend en tu máquina, cambia `API_BASE` (por ejemplo `http://localhost:8081`) y asegúrate de que el backend permita tu origen en CORS.
+Cada `push` a `main` actualiza la versión en línea (1–2 minutos).
 
----
+## 🔗 Integración con el backend
 
-## Despliegue en GitHub Pages
+| Acción | Endpoint | Cabeceras / cuerpo |
+|--------|----------|-------------------|
+| Registro | `POST /auth/register` | JSON: `nombre`, `correo`, `telefono`, `contrasena`, `rol` |
+| Login | `POST /auth/login` | JSON: `correo`, `contrasena` |
+| Recursos protegidos | `/servicios`, `/reservas`, … | `Authorization: Bearer {token}` |
 
-1. Repositorio: **EnithV/stylefactory**, rama `main`.
-2. En GitHub: **Settings → Pages → Build and deployment**.
-3. Source: **Deploy from a branch**, carpeta **`/ (root)`**.
-4. Tras unos minutos el sitio queda en [https://enithv.github.io/stylefactory/](https://enithv.github.io/stylefactory/).
+En Render (plan gratis) la primera petición tras inactividad puede tardar ~1 minuto.
 
-Cada `push` a `main` actualiza la versión publicada.
+### Si aparece NetworkError
 
----
+- Entra por GitHub Pages o `http://localhost`, no por `file://`
+- Comprueba que Render tenga el servicio activo
+- El backend debe permitir CORS desde `https://enithv.github.io`
 
-## Integración con el backend
+## 📌 Notas importantes
 
-| Acción | Endpoint | Notas |
-|--------|----------|--------|
-| Registro | `POST /auth/register` | Cuerpo JSON: `nombre`, `correo`, `telefono`, `contrasena`, `rol` |
-| Login | `POST /auth/login` | Devuelve `token`, `nombre`, `correo`, `rol` |
-| Resto de recursos | `/servicios`, `/reservas`, etc. | Requieren cabecera `Authorization: Bearer {token}` |
+- Los formularios de **login** y **registro** viven en **iframes**; las rutas de redirección usan `urlApp()` para no romper GitHub Pages.
+- El **contacto** se envía con Formspree; no pasa por el API de Style Factory.
+- Parte del **admin** y del **catálogo** aún usa `localStorage` para datos de prueba mientras avanza la integración total. La sesión (`token`, `usuarioLogueado`) sí depende del backend.
 
-En el plan gratuito de Render el API puede tardar hasta un minuto en responder la primera vez tras estar inactivo.
+## ✅ Estado del frontend
 
-Si ves **NetworkError** o **No se pudo conectar con el servidor**:
-
-- Confirma que entras por `http://localhost` o por GitHub Pages, no por `file://`.
-- Revisa que el servicio en Render esté activo.
-- El backend debe tener CORS habilitado para `https://enithv.github.io` y para tu puerto local.
-
----
-
-## Módulos que aún usan almacenamiento local
-
-Algunas pantallas de administración y catálogo guardan datos en `localStorage` como apoyo mientras se completa la integración total con el API (listas de servicios, reservas de prueba, servicio seleccionado para reservar). La sesión de usuario (`token` y `usuarioLogueado`) sí depende del backend tras un login correcto.
+- Home, catálogo, nosotros, contacto y formularios operativos
+- Login y registro conectados al API
+- Validaciones en tiempo real (nombre, teléfono, contraseña)
+- Toggle mostrar/ocultar contraseña
+- Navbar con sesión y enlace admin según rol
+- Desplegado en GitHub Pages bajo `/stylefactory/`
 
 ---
 
-## Créditos y contacto
-
-Proyecto académico / Generation Colombia — **Style Factory**.
-
-Para incidencias del frontend, abre un issue en este repositorio. Para el API, usa el repositorio del backend.
+*Style Factory — Cortes que inspiran.*  
+Proyecto **Generation Colombia**. Frontend en este repo; API en [stylefactory-backend](https://github.com/EnithV/stylefactory-backend).

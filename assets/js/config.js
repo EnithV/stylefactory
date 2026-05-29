@@ -9,6 +9,42 @@ const FRONTEND_BASE_URL = "https://enithv.github.io/stylefactory";
 const GITHUB_PAGES_BASE_PATH = "/stylefactory";
 
 /**
+ * Prefijo del sitio según la URL actual (p. ej. /stylefactory en GitHub Pages, "" en local).
+ */
+function obtenerBaseAplicacion() {
+    var ventana = window;
+    try {
+        if (window.parent && window.parent !== window) {
+            ventana = window.parent;
+        }
+    } catch (e) {
+        /* mismo origen esperado */
+    }
+    var path = ventana.location.pathname || "";
+    var pagesIdx = path.indexOf("/pages/");
+    if (pagesIdx >= 0) {
+        return pagesIdx > 0 ? path.substring(0, pagesIdx) : "";
+    }
+    var componentsIdx = path.indexOf("/components/");
+    if (componentsIdx > 0) {
+        return path.substring(0, componentsIdx);
+    }
+    if (path.indexOf("github.io") !== -1 && GITHUB_PAGES_BASE_PATH) {
+        return GITHUB_PAGES_BASE_PATH;
+    }
+    return "";
+}
+
+/**
+ * Arma una ruta absoluta dentro del sitio: base + /pages/...
+ */
+function urlApp(rutaDesdeRaiz) {
+    var base = obtenerBaseAplicacion();
+    var ruta = rutaDesdeRaiz.charAt(0) === "/" ? rutaDesdeRaiz : "/" + rutaDesdeRaiz;
+    return base + ruta;
+}
+
+/**
  * Mensaje claro cuando fetch falla por red o CORS (p. ej. "NetworkError", "Failed to fetch").
  */
 function mensajeErrorConexion(error) {

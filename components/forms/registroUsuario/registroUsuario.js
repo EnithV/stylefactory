@@ -130,7 +130,10 @@
     }
 
     function redirigirAlLogin() {
-        var url = '../../pages/login/login.html?registro=exito';
+        var url =
+            typeof urlApp === "function"
+                ? urlApp("/pages/login/login.html?registro=exito")
+                : "../../pages/login/login.html?registro=exito";
         if (window.parent && window.parent !== window) {
             window.parent.location.href = url;
         } else {

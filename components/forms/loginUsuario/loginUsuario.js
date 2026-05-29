@@ -41,9 +41,14 @@
     }
 
     function obtenerUrlRedireccion(rol) {
-        return rol === 'ADMIN'
-            ? '../../pages/admin/panelDeControl/panelControl.html'
-            : '../../index.html';
+        if (typeof urlApp === "function") {
+            return rol === "ADMIN"
+                ? urlApp("/pages/admin/panelDeControl/panelControl.html")
+                : urlApp("/index.html");
+        }
+        return rol === "ADMIN"
+            ? "../../pages/admin/panelDeControl/panelControl.html"
+            : "../../index.html";
     }
 
     function initLoginForm() {
