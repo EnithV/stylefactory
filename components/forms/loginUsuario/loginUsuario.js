@@ -125,8 +125,12 @@
                     var mensajeBienvenida = document.getElementById('mensajeBienvenida');
                     if (mensajeBienvenida) {
                         var nombreCorto = (data.nombre || '').trim().split(/\s+/)[0] || data.nombre;
-                        mensajeBienvenida.textContent = '¡Bienvenido/a, ' + nombreCorto + '!';
-                        mensajeBienvenida.style.display = 'block';
+                        mensajeBienvenida.innerHTML =
+                            '<span class="mensaje-bienvenida-icon" aria-hidden="true"></span>' +
+                            '<span class="mensaje-bienvenida-texto">¡Bienvenido/a, <strong>' +
+                            nombreCorto +
+                            '</strong>!</span>';
+                        mensajeBienvenida.style.display = 'flex';
                     }
 
                     setTimeout(function () {
