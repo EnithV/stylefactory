@@ -73,6 +73,7 @@ function renderizarReservas() {
   }
 
   const precioFormateado = Number(servicio.precio).toLocaleString('es-CO');
+  const duracionMin = servicio.duracionMinutos ?? 60;
 
   container.innerHTML = `
     <div class="contenido_reserva">
@@ -84,6 +85,7 @@ function renderizarReservas() {
           </a>
         </div>
         <p>${servicio.descripcion}</p>
+        <p class="text-muted" style="font-size:14px;margin-top:8px;">Duración estimada: ${duracionMin} min</p>
       </div>
       <div class="contenedor_imagen">
         <img src="${servicio.imagen}" alt="${servicio.nombre}">
@@ -144,8 +146,11 @@ for (let i = 0; i < estilistas.length; i += cantCards) {
  * Estado global de la selección de reserva (calendario inicia en mes actual, Colombia).
  */
 const ZONA_COLOMBIA = "America/Bogota";
-/** Después de las 18:00 (6 p.m.) en Colombia no se aceptan reservas para el mismo día. */
-const HORA_CIERRE_RESERVAS_HOY = 18;
+/** Horario de atención en salón: 9:00 a.m. – 8:00 p.m. */
+const HORA_APERTURA_ATENCION = 9;
+const HORA_CIERRE_ATENCION = 20;
+/** Última hora de INICIO de cita agendable (6 p.m.), cualquier día. Después quedan 2 h hasta el cierre. */
+const HORA_ULTIMO_INICIO_CITA = 18;
 
 const partesColombiaInicial = obtenerPartesFechaColombia();
 const estado = {
@@ -195,20 +200,13 @@ function esHoyEnColombia(fechaStr) {
   return fechaStr === obtenerHoyCadena();
 }
 
-function yaPasóCierreReservasHoy() {
-  const p = obtenerPartesFechaColombia();
-  return p.hora >= HORA_CIERRE_RESERVAS_HOY;
-}
-
 function esFechaPasada(fechaStr) {
   return fechaStr < obtenerHoyCadena();
 }
 
-/** Hoy no se reserva si ya pasó el cierre (6 p.m.); mañana y fechas futuras sí. */
+/** Solo se bloquean fechas pasadas; el cliente puede reservar a cualquier hora del día para hoy o días futuros. */
 function fechaReservable(fechaStr) {
-  if (esFechaPasada(fechaStr)) return false;
-  if (esHoyEnColombia(fechaStr) && yaPasóCierreReservasHoy()) return false;
-  return true;
+  return !esFechaPasada(fechaStr);
 }
 
 function puedeIrMesAnterior() {
@@ -216,20 +214,56 @@ function puedeIrMesAnterior() {
   return estado.anio > p.anio || (estado.anio === p.anio && estado.mes > p.mes);
 }
 
+function parseHoraAMinutos(hora) {
+  const partes = hora.split(":");
+  return parseInt(partes[0], 10) * 60 + parseInt(partes[1], 10);
+}
+
+function obtenerDuracionServicioMinutos() {
+  try {
+    const servicio = JSON.parse(localStorage.getItem("servicioSeleccionado") || "null");
+    const duracion = servicio && servicio.duracionMinutos;
+    return typeof duracion === "number" && duracion > 0 ? duracion : 60;
+  } catch (e) {
+    return 60;
+  }
+}
+
+/** El servicio debe finalizar a más tardar a las 8 p.m. */
+function slotCabeEnHorarioAtencion(hora, duracionMinutos) {
+  return parseHoraAMinutos(hora) + duracionMinutos <= HORA_CIERRE_ATENCION * 60;
+}
+
+/** Citas solo entre 9 a.m. y 6 p.m. de inicio (regla de negocio, todos los días). */
+function slotPermitidoInicio(hora) {
+  const minutos = parseHoraAMinutos(hora);
+  return minutos >= HORA_APERTURA_ATENCION * 60 && minutos <= HORA_ULTIMO_INICIO_CITA * 60;
+}
+
 function filtrarHorasFuturas(fechaStr, horas) {
   if (!esHoyEnColombia(fechaStr)) return horas;
   const p = obtenerPartesFechaColombia();
   const minutosActuales = p.hora * 60 + p.minuto;
-  return horas.filter((hora) => {
-    const [hh, mm] = hora.split(":").map(Number);
-    return hh * 60 + mm > minutosActuales;
+  return horas.filter(function (hora) {
+    return parseHoraAMinutos(hora) > minutosActuales;
   });
+}
+
+function filtrarHorasPorReglasNegocio(fechaStr, horas) {
+  const duracion = obtenerDuracionServicioMinutos();
+  let filtradas = horas.filter(function (hora) {
+    return slotPermitidoInicio(hora) && slotCabeEnHorarioAtencion(hora, duracion);
+  });
+  if (esHoyEnColombia(fechaStr)) {
+    filtradas = filtrarHorasFuturas(fechaStr, filtradas);
+  }
+  return filtradas;
 }
 
 function obtenerHorasReservables(fechaStr) {
   if (!estado.estilista || !fechaReservable(fechaStr)) return [];
   const horas = estado.estilista.disponibilidad[fechaStr] ?? [];
-  return filtrarHorasFuturas(fechaStr, horas);
+  return filtrarHorasPorReglasNegocio(fechaStr, horas);
 }
 
 function fechaTieneHorariosReservables(fechaStr) {
@@ -325,7 +359,10 @@ function renderHoras(fechaStr) {
   const horas = obtenerHorasReservables(fechaStr);
 
   if (horas.length === 0) {
-    contenedor.innerHTML = `<p class="text-muted" style="font-size:13px;">No hay horarios disponibles.</p>`;
+    const duracion = obtenerDuracionServicioMinutos();
+    contenedor.innerHTML =
+      `<p class="text-muted" style="font-size:13px;">No hay horarios disponibles para este servicio (${duracion} min). ` +
+      `Las citas se agendan de 9:00 a.m. a 6:00 p.m. (último inicio) y el servicio debe terminar antes de las 8:00 p.m.</p>`;
     return;
   }
 
