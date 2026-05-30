@@ -59,7 +59,11 @@ if (document.getElementById('cards-container')) {
         .then(html => { document.getElementById('footer-placeholder').innerHTML = html; })
         .catch(err => console.error('Error cargando el footer:', err));
 
-    document.addEventListener('DOMContentLoaded', renderizarCatalogo);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', renderizarCatalogo);
+    } else {
+        renderizarCatalogo();
+    }
 }
 
 let btnReservar;
