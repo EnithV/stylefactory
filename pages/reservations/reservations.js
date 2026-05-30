@@ -142,8 +142,8 @@ for (let i = 0; i < estilistas.length; i += cantCards) {
  * Estado global de la selección de reserva (calendario inicia en mes actual, Colombia).
  */
 const ZONA_COLOMBIA = "America/Bogota";
-/** Después de las 19:00 (7 p.m.) en Colombia no se aceptan reservas para el mismo día. */
-const HORA_CIERRE_RESERVAS_HOY = 19;
+/** Después de las 18:00 (6 p.m.) en Colombia no se aceptan reservas para el mismo día. */
+const HORA_CIERRE_RESERVAS_HOY = 18;
 
 const partesColombiaInicial = obtenerPartesFechaColombia();
 const estado = {
@@ -202,7 +202,7 @@ function esFechaPasada(fechaStr) {
   return fechaStr < obtenerHoyCadena();
 }
 
-/** Hoy no se reserva si ya pasó el cierre (7 p.m.); mañana y fechas futuras sí. */
+/** Hoy no se reserva si ya pasó el cierre (6 p.m.); mañana y fechas futuras sí. */
 function fechaReservable(fechaStr) {
   if (esFechaPasada(fechaStr)) return false;
   if (esHoyEnColombia(fechaStr) && yaPasóCierreReservasHoy()) return false;
