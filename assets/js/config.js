@@ -54,6 +54,28 @@ function saludoNavbar(nombre) {
 }
 
 /**
+ * Resalta el enlace del navbar que corresponde a la página actual.
+ */
+function marcarEnlaceNavbarActivo() {
+    var enlaces = document.querySelectorAll('.navbar-nav .nav-link');
+    var rutaActual = window.location.pathname.split('/').pop() || '';
+    if (rutaActual === '' || rutaActual === '/') {
+        rutaActual = 'index.html';
+    }
+
+    enlaces.forEach(function (enlace) {
+        var href = enlace.getAttribute('href');
+        if (!href) return;
+        var rutaEnlace = href.split('/').pop().split('?')[0];
+        if (rutaEnlace === rutaActual) {
+            enlace.classList.add('active');
+        } else {
+            enlace.classList.remove('active');
+        }
+    });
+}
+
+/**
  * Mensaje claro cuando fetch falla por red o CORS (p. ej. "NetworkError", "Failed to fetch").
  */
 function mensajeErrorConexion(error) {

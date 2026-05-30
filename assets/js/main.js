@@ -55,20 +55,9 @@ fetch('components/navbar/navbar.html')
             btnCerrarSesion.addEventListener('click', cerrarSesion);
         }
 
-        // Resalta el enlace activo en el navbar según la página actual
-        const enlaces = document.querySelectorAll('.nav-link');
-        let rutaActual = window.location.pathname.split("/").pop();
-        if (rutaActual === "" || rutaActual === "/") {
-            rutaActual = "index.html";
+        if (typeof marcarEnlaceNavbarActivo === 'function') {
+            marcarEnlaceNavbarActivo();
         }
-        enlaces.forEach(enlace => {
-            let rutaEnlace = enlace.getAttribute('href').split("/").pop();
-            if (rutaEnlace === rutaActual) {
-                enlace.classList.add('active');
-            } else {
-                enlace.classList.remove('active');
-            }
-        });
     })
     .catch(err => console.error('Error cargando el navbar:', err));
 

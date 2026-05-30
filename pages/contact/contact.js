@@ -43,6 +43,9 @@ fetch('../../components/navbar/navbar.html')
     .then(html => {
         document.getElementById('header').innerHTML = html;
         actualizarNavbar();
+        if (typeof marcarEnlaceNavbarActivo === 'function') {
+            marcarEnlaceNavbarActivo();
+        }
         const btnCerrarSesion = document.getElementById('btnCerrarSesion');
         if (btnCerrarSesion) {
             btnCerrarSesion.addEventListener('click', cerrarSesion);
