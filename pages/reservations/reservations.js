@@ -10,7 +10,7 @@ function actualizarNavbar() {
     
     if (usuarioLogueado) {
         const usuario = JSON.parse(usuarioLogueado);
-        if (userNameSpan) userNameSpan.textContent = `Hola, ${usuario.nombre}`;
+        if (userNameSpan) userNameSpan.textContent = typeof saludoNavbar === 'function' ? saludoNavbar(usuario.nombre) : 'Hola, ' + usuario.nombre;
         if (userInfo) userInfo.style.display = 'block';
         if (accesoBotones) accesoBotones.style.display = 'none';
         

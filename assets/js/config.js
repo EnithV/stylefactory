@@ -45,6 +45,15 @@ function urlApp(rutaDesdeRaiz) {
 }
 
 /**
+ * Saludo corto para el navbar (solo primer nombre, evita romper el layout).
+ */
+function saludoNavbar(nombre) {
+    var limpio = (nombre || '').trim();
+    if (!limpio) return 'Hola';
+    return 'Hola, ' + limpio.split(/\s+/)[0];
+}
+
+/**
  * Mensaje claro cuando fetch falla por red o CORS (p. ej. "NetworkError", "Failed to fetch").
  */
 function mensajeErrorConexion(error) {
