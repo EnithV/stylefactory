@@ -86,6 +86,7 @@
 
 .contenido_reserva .texto {
   flex: 1;
+  color: #333;
 }
 
 .contenedor_precio {
@@ -174,6 +175,11 @@
 
 .texto-header h1 {
   margin: 0;
+  font-family: var(--font-family-title);
+  font-size: 1.85rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  line-height: 1.2;
 }
 
 .btn-cambiar-servicio {
