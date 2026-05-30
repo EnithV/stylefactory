@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="../../assets/css/main.css">
     <link rel="stylesheet" href="../../components/navbar/navbar.css">
     <link rel="stylesheet" href="../../components/footer/footer.css">
-    <link rel="stylesheet" href="catalogoServicios.css?v=5">
+    <link rel="stylesheet" href="catalogoServicios.css?v=6">
 </head>
 <body>
     <header id="header" class="sticky-top"></header>
@@ -28,6 +28,17 @@
                 <p>Descubre los tratamientos y servicios que tenemos para ti. Reserva en línea en pocos pasos.</p>
             </div>
 
+            <div class="catalogo-filtros-wrap">
+                <p class="catalogo-filtros-label">Filtrar por categoría</p>
+                <div id="catalogo-filtros" class="catalogo-filtros" role="tablist" aria-label="Filtrar por tipo de servicio"></div>
+            </div>
+
+            <div id="catalogo-vacio" class="catalogo-vacio" style="display: none;">
+                <i class="fa-solid fa-spa" aria-hidden="true"></i>
+                <p>No hay servicios en esta categoría por ahora.</p>
+                <button type="button" class="btn-filtro-todos" id="btn-ver-todos">Ver todos los servicios</button>
+            </div>
+
             <div id="cards-container" class="cards-grid"></div>
         </div>
     </main>
@@ -39,7 +50,7 @@
     <script src="https://kit.fontawesome.com/da49b4fb7a.js" crossorigin="anonymous"></script>
     <!-- Scripts locales con rutas relativas. config.js define la URL base de la API. -->
     <script src="../../assets/js/config.js"></script>
-    <script type="module" src="catalogoServicios.js?v=5"></script>
+    <script type="module" src="catalogoServicios.js?v=6"></script>
 
 </body>
 </html>
