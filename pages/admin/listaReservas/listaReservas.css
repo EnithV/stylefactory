@@ -84,15 +84,22 @@
     text-align: left;
 }
 
-/* Encabezado */
+/* Encabezado: prioridad sobre estilos de Bootstrap .table / .table-striped */
+.admin-lista-reservas-panel .tabla-lista-reservas thead th,
+#content .tabla-lista-reservas thead th,
 .tabla-lista-reservas thead th {
-    background-color: var(--color-primary, #522676);
-    color: #ffffff;
+    background-color: var(--color-primary, #522676) !important;
+    color: #ffffff !important;
+    --bs-table-color: #ffffff;
+    --bs-table-bg: var(--color-primary, #522676);
+    --bs-table-striped-color: #ffffff;
+    --bs-table-striped-bg: var(--color-primary, #522676);
     font-family: var(--font-family-general, 'Montserrat', sans-serif);
     font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.4px;
     text-transform: uppercase;
+    border-color: var(--color-primary, #522676);
 }
 
 /* Filas intercaladas - Color lila suave como la gráfica */
@@ -244,6 +251,7 @@
 
     .tabla-lista-reservas thead th {
         font-size: 0.65rem;
+        color: #ffffff !important;
     }
 
     .btn-accion {
