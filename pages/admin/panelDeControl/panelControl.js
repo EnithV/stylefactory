@@ -1,101 +1,129 @@
 /**
- * Importa las funciones de inicialización de los módulos de administración.
- * Las rutas de importación son relativas a la ubicación de este archivo.
+ * Panel de administración: layout embebido en HTML + carga dinámica de secciones.
  */
-import { initListaServicios } from "../listaServicios/listaServicios.js";
-import { initListaReservas } from "../listaReservas/listaReservas.js";
-
-/**
- * Carga el componente del navbar de administración y configura la barra lateral.
- * La ruta del fetch es relativa a la ubicación actual (pages/admin/panelDeControl/).
- */
-fetch('../../../components/navbarAdmin/navbar_Admin.html')
-    .then(function (res) {
-        if (!res.ok) throw new Error('No se pudo cargar el panel (' + res.status + ')');
-        return res.text();
-    })
-    .then(function (html) {
-        document.getElementById('navbarAdmin-placeholder').innerHTML = html;
+(function () {
+    function iniciarPanel() {
+        if (!verificarSesionAdmin()) return;
         initSidebar();
-    })
-    .catch(function (err) {
-        console.error('Error cargando el navbar admin:', err);
-        document.body.innerHTML =
-            '<p style="padding:2rem;font-family:sans-serif;">No se pudo cargar el panel de administración. Recarga la página o vuelve a iniciar sesión.</p>';
-    });
+    }
 
-/**
- * Inicializa la barra lateral de navegación del panel de administración.
- * Configura el botón de colapso, los enlaces de navegación y la carga
- * dinámica de contenido en el área principal.
- */
-function initSidebar() {
-  const sidebar = document.getElementById("sidebar");
-  const toggleBtn = document.getElementById("toggleBtn");
-  const links = document.querySelectorAll(".nav-link");
-  const content = document.getElementById("content");
-  const logoutBtn = document.querySelector(".logout");
+    function verificarSesionAdmin() {
+        var raw = localStorage.getItem('usuarioLogueado');
+        if (!raw) {
+            redirigirLogin();
+            return false;
+        }
+        try {
+            var usuario = JSON.parse(raw);
+            var rol = (usuario.rol || '').toUpperCase();
+            if (rol !== 'ADMIN') {
+                redirigirLogin();
+                return false;
+            }
+        } catch (e) {
+            redirigirLogin();
+            return false;
+        }
+        return true;
+    }
 
-  // Alterna el estado colapsado de la barra lateral
-  toggleBtn.addEventListener("click", () => {
-    sidebar.classList.toggle("collapsed");
-  });
+    function redirigirLogin() {
+        var destino = typeof urlApp === 'function'
+            ? urlApp('/pages/login/login.html')
+            : '../../../pages/login/login.html';
+        window.location.href = destino;
+    }
 
-  // Carga la página de métricas por defecto al iniciar el panel
-  loadPage("../../../components/metricas/metricas.html");
+    function initSidebar() {
+        var sidebar = document.getElementById('sidebar');
+        var toggleBtn = document.getElementById('toggleBtn');
+        var links = document.querySelectorAll('.nav-link');
+        var content = document.getElementById('content');
+        var logoutBtn = document.querySelector('.logout');
 
-  // Configura la navegación entre las diferentes secciones del panel
-  links.forEach(link => {
-    link.addEventListener("click", function () {
-      if (this.classList.contains("logout")) return;
-      links.forEach(l => l.classList.remove("active"));
-      this.classList.add("active");
-      const page = this.getAttribute("data-page");
-      loadPage(page);
-    });
-  });
-
-  // Configura el botón de cierre de sesión con confirmación modal
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
-      const modalSalir = new bootstrap.Modal(document.getElementById("modalSalir"));
-      modalSalir.show();
-
-      const btnSalirConfirmado = document.getElementById("btnSalirConfirmado");
-      btnSalirConfirmado.addEventListener("click", () => {
-        window.location.href = "../../../index.html";
-      });
-    });
-  }
-
-  /**
-   * Carga una página HTML en el área de contenido principal y ejecuta
-   * las inicializaciones correspondientes según la sección cargada.
-   * @param {string} page - Ruta relativa al archivo HTML a cargar.
-   */
-  function loadPage(page) {
-    fetch(page)
-      .then(function (res) {
-        if (!res.ok) throw new Error('No se pudo cargar ' + page);
-        return res.text();
-      })
-      .then(function (html) {
-        content.innerHTML = html;
-
-        // Inicializa las métricas si la página cargada lo requiere
-        if (page.includes("metricas")) {
-          initMetricas();
+        if (!sidebar || !toggleBtn || !content) {
+            console.error('Panel admin: no se encontró la estructura del layout.');
+            return;
         }
 
-        // Inicializa la lista de servicios si corresponde
-        if (page.includes("listaServicios")) {
-          initListaServicios();
-        }
+        toggleBtn.addEventListener('click', function () {
+            sidebar.classList.toggle('collapsed');
+        });
 
-        // Inicializa la lista de reservas si corresponde
-        if (page.includes("listaReservas")) {
-          initListaReservas();
+        loadPage('../../../components/metricas/metricas.html');
+
+        links.forEach(function (link) {
+            link.addEventListener('click', function (event) {
+                if (this.classList.contains('logout')) {
+                    event.preventDefault();
+                    return;
+                }
+                event.preventDefault();
+                links.forEach(function (l) { l.classList.remove('active'); });
+                this.classList.add('active');
+                loadPage(this.getAttribute('data-page'));
+            });
+        });
+
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function () {
+                var modalSalir = new bootstrap.Modal(document.getElementById('modalSalir'));
+                modalSalir.show();
+
+                var btnSalirConfirmado = document.getElementById('btnSalirConfirmado');
+                btnSalirConfirmado.addEventListener('click', function () {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('usuarioLogueado');
+                    var destino = typeof urlApp === 'function'
+                        ? urlApp('/index.html')
+                        : '../../../index.html';
+                    window.location.href = destino;
+                });
+            });
         }
-      });
-  }
-}
+    }
+
+    function loadPage(page) {
+        var content = document.getElementById('content');
+        if (!content || !page) return;
+
+        fetch(page)
+            .then(function (res) {
+                if (!res.ok) throw new Error('No se pudo cargar ' + page);
+                return res.text();
+            })
+            .then(function (html) {
+                content.innerHTML = html;
+
+                if (page.indexOf('metricas') !== -1) {
+                    if (typeof initMetricas === 'function') {
+                        initMetricas();
+                    }
+                    return;
+                }
+
+                if (page.indexOf('listaServicios') !== -1) {
+                    return import('../listaServicios/listaServicios.js').then(function (mod) {
+                        mod.initListaServicios();
+                    });
+                }
+
+                if (page.indexOf('listaReservas') !== -1) {
+                    return import('../listaReservas/listaReservas.js').then(function (mod) {
+                        mod.initListaReservas();
+                    });
+                }
+            })
+            .catch(function (err) {
+                console.error('Error cargando sección del panel:', err);
+                content.innerHTML =
+                    '<p style="padding:2rem;font-family:sans-serif;">No se pudo cargar esta sección. Recarga la página.</p>';
+            });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', iniciarPanel);
+    } else {
+        iniciarPanel();
+    }
+})();

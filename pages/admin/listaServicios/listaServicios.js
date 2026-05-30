@@ -3,7 +3,7 @@
  * productos: catálogo de servicios por defecto.
  * initFormulario: función que inicializa el formulario de creación/edición.
  */
-import { productos } from "../../catalogoServicios/catalogoServicios.js";
+import { productos } from "../../../assets/js/productosCatalogo.js";
 import { initFormulario } from "../../../components/forms/creacionServicios/formCreacionServicios.js";
 
 const KEY = "Lista de Servicios";

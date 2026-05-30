@@ -1,3 +1,15 @@
-body{
+body {
     padding: 0;
+    margin: 0;
+    background: #f8f9fa;
+}
+
+#navbarAdmin-placeholder,
+#navbarAdmin-placeholder .d-flex {
+    min-height: 100vh;
+}
+
+.content {
+    min-height: 100vh;
+    background: #f8f9fa;
 }

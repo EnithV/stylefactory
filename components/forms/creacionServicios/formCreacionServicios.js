@@ -1,12 +1,28 @@
-import { productos } from '../../../pages/catalogoServicios/catalogoServicios.js';
+import { productos } from '../../../assets/js/productosCatalogo.js';
 
-let listaDeServicios = JSON.parse(localStorage.getItem("Lista de Servicios")) || [];
+function leerListaServicios() {
+    try {
+        return JSON.parse(localStorage.getItem("Lista de Servicios")) || [];
+    } catch (e) {
+        return [];
+    }
+}
 
-if (listaDeServicios.length == 0) {
+function guardarListaServicios(lista) {
+    try {
+        localStorage.setItem("Lista de Servicios", JSON.stringify(lista));
+    } catch (e) {
+        console.warn("No se pudo guardar en localStorage:", e);
+    }
+}
+
+let listaDeServicios = leerListaServicios();
+
+if (listaDeServicios.length === 0) {
     productos.forEach(function (elemento) {
         listaDeServicios.push(elemento);
     });
-    localStorage.setItem("Lista de Servicios", JSON.stringify(listaDeServicios));
+    guardarListaServicios(listaDeServicios);
 }
 
 function validar(valor) {

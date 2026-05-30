@@ -211,6 +211,7 @@ function initMetricas(){
 
     // Selecciona el <tbody> del HTML donde se van a insertar las filas dinámicamente
 const tbody = document.getElementById('tabla-body');
+if (!tbody) return;
 // Recorre cada servicio del array para generar una fila HTML por cada uno
  // limpiar tabla
     tbody.innerHTML = "";
