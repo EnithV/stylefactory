@@ -1,4 +1,4 @@
-/* ===== Catálogo — grid compacto (opción A) + estilo marca ===== */
+/* ===== Catálogo �?? grid compacto (opción A) + estilo marca ===== */
 
 .catalogo-main {
     background: linear-gradient(180deg, #faf8fc 0%, #f3f0f7 45%, #f5f7fa 100%);
@@ -55,19 +55,7 @@
     line-height: 1.6;
 }
 
-.catalogo-count {
-    display: inline-block;
-    margin-top: 1rem;
-    padding: 0.35rem 1rem;
-    border-radius: 999px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--color-primary, #522676);
-    background: rgba(82, 38, 118, 0.08);
-    border: 1px solid rgba(174, 141, 62, 0.35);
-}
-
-/* ----- Grid 3 columnas (opción A) ----- */
+/* ----- Grid 3 columnas (opcion A) ----- */
 .cards-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
