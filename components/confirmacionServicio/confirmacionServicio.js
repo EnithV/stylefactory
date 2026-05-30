@@ -137,7 +137,7 @@ async function confirmarReserva() {
   var cuerpo = {
     fecha: datos.fecha,
     hora: ReservaPendiente.normalizarHora(datos.hora),
-    estado: "PENDIENTE",
+    estado: "CONFIRMADA",
     usuarioId: usuarioId,
     empleadoId: empleadoId,
     servicioId: servicioId,

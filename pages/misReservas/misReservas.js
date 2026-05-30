@@ -62,6 +62,7 @@ function formatearHora(hora) {
 function claseEstadoReserva(estado) {
     var valor = (estado || 'PENDIENTE').toLowerCase();
     if (valor.indexOf('cancel') !== -1) return 'cancelada';
+    if (valor.indexOf('complet') !== -1) return 'confirmada';
     if (valor.indexOf('confirm') !== -1) return 'confirmada';
     return 'pendiente';
 }
@@ -69,6 +70,7 @@ function claseEstadoReserva(estado) {
 function etiquetaEstado(estado) {
     var valor = (estado || 'PENDIENTE').toUpperCase();
     if (valor.indexOf('CANCEL') !== -1) return 'Cancelada';
+    if (valor === 'COMPLETADA') return 'Completada';
     if (valor.indexOf('CONFIRM') !== -1) return 'Confirmada';
     return 'Pendiente';
 }

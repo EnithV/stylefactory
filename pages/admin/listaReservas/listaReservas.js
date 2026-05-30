@@ -1,4 +1,9 @@
-import { listarReservas, eliminarReserva } from '../../../assets/js/apiClient.js';
+import {
+    listarReservas,
+    eliminarReserva,
+    actualizarEstadoReserva,
+    ESTADOS_RESERVA,
+} from '../../../assets/js/apiClient.js';
 
 let reservasCache = [];
 let idAEliminar = null;
@@ -19,7 +24,7 @@ function formatearHora(hora) {
 
 function claseEstado(estado) {
     const valor = (estado || '').toUpperCase();
-    if (valor === 'CONFIRMADA' || valor === 'PENDIENTE') return 'confirmada';
+    if (valor === 'CONFIRMADA' || valor === 'COMPLETADA') return 'confirmada';
     if (valor === 'CANCELADA') return 'cancelada';
     return 'pendiente';
 }
@@ -29,7 +34,20 @@ function etiquetaEstado(estado) {
     if (valor === 'PENDIENTE') return 'Pendiente';
     if (valor === 'CONFIRMADA') return 'Confirmada';
     if (valor === 'CANCELADA') return 'Cancelada';
+    if (valor === 'COMPLETADA') return 'Completada';
     return estado || '—';
+}
+
+function opcionesEstadoSelect(estadoActual) {
+    const actual = (estadoActual || 'PENDIENTE').toUpperCase();
+    return ESTADOS_RESERVA.map(function (estado) {
+        const selected = estado === actual ? ' selected' : '';
+        return (
+            '<option value="' + estado + '"' + selected + '>' +
+            etiquetaEstado(estado) +
+            '</option>'
+        );
+    }).join('');
 }
 
 function mostrarCargandoTabla() {
@@ -69,7 +87,12 @@ export function renderizarTablaReservas() {
             '<td>' + (reserva.nombreServicio || '—') + '</td>' +
             '<td>' + formatearFecha(reserva.fecha) + '</td>' +
             '<td>' + formatearHora(reserva.hora) + '</td>' +
-            '<td><span class="badge-estado ' + estadoClase + '">' + etiquetaEstado(reserva.estado) + '</span></td>' +
+            '<td>' +
+            '<select class="select-estado-reserva badge-estado ' + estadoClase + '" ' +
+            'data-id="' + reserva.id + '" aria-label="Estado de la reserva">' +
+            opcionesEstadoSelect(reserva.estado) +
+            '</select>' +
+            '</td>' +
             '<td class="celda-acciones">' +
             '<button class="btn-accion btn-eliminar-reserva" data-id="' + reserva.id + '" title="Eliminar">' +
             '<i class="fa-solid fa-trash"></i></button>' +
@@ -95,6 +118,39 @@ async function cargarReservas() {
 
 export function initListaReservas() {
     cargarReservas();
+
+    document.addEventListener('change', async function (e) {
+        const select = e.target.closest('.select-estado-reserva');
+        if (!select) return;
+
+        const id = select.dataset.id;
+        const nuevoEstado = select.value;
+        const estadoAnterior = reservasCache.find(function (r) {
+            return String(r.id) === String(id);
+        });
+
+        select.disabled = true;
+        try {
+            const actualizada = await actualizarEstadoReserva(id, nuevoEstado);
+            if (estadoAnterior) {
+                estadoAnterior.estado = actualizada.estado;
+            }
+            select.className =
+                'select-estado-reserva badge-estado ' + claseEstado(actualizada.estado);
+        } catch (error) {
+            console.error('Error actualizando estado:', error);
+            if (estadoAnterior) {
+                select.value = (estadoAnterior.estado || 'PENDIENTE').toUpperCase();
+            }
+            const texto =
+                typeof mensajeErrorConexion === 'function'
+                    ? mensajeErrorConexion(error)
+                    : error.message;
+            alert('No se pudo cambiar el estado: ' + texto);
+        } finally {
+            select.disabled = false;
+        }
+    });
 
     document.addEventListener('click', function (e) {
         const btnEliminar = e.target.closest('.btn-eliminar-reserva');

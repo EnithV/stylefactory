@@ -105,3 +105,18 @@ export async function eliminarReserva(id) {
         headers: headersAuth(false),
     });
 }
+
+export async function actualizarEstadoReserva(id, estado) {
+    return fetchJson(API_URL + "/reservas/" + id + "/estado", {
+        method: "PATCH",
+        headers: headersAuth(),
+        body: JSON.stringify({ estado: estado }),
+    });
+}
+
+export const ESTADOS_RESERVA = [
+    "PENDIENTE",
+    "CONFIRMADA",
+    "CANCELADA",
+    "COMPLETADA",
+];

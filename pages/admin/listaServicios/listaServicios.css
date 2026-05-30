@@ -52,4 +52,16 @@
   overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
 }
 
+/* Vista embebida en panel admin */
+#content .admin-seccion-embebida,
+.admin-seccion-embebida {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 1.25rem 1.5rem;
+}
+
+#content .admin-seccion-embebida .contenedor-tabla-reservas {
+  margin-top: 0;
+}
 
