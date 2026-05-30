@@ -100,12 +100,12 @@ document.addEventListener('DOMContentLoaded', renderizarReservas);
  * Los datos se muestran en un carrusel para que el usuario elija.
  */
 const estilistas = [
-  { id: 1, empleadoId: 1, nombre: "Ana García", especialidad: "Colorimetría", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336588/Sty1_wj2bmn.png", disponibilidad: { "2026-06-02": ["09:00", "10:00", "14:00", "15:00"], "2026-06-03": ["09:00", "11:00", "16:00"], "2026-06-05": ["10:00", "13:00", "17:00"], "2026-06-06": ["09:00", "10:00", "11:00"], "2026-06-09": ["14:00", "15:00", "16:00"] } },
-  { id: 2, empleadoId: 2, nombre: "Laura Martínez", especialidad: "Cortes y peinados", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336622/Sty2_z1upkm.png", disponibilidad: { "2026-06-02": ["08:00", "09:00", "11:00"], "2026-06-03": ["10:00", "12:00", "15:00"], "2026-06-05": ["09:00", "11:00", "14:00"], "2026-06-06": ["13:00", "15:00", "17:00"], "2026-06-09": ["09:00", "10:00", "12:00"] } },
-  { id: 3, empleadoId: 3, nombre: "Camila Rodríguez", especialidad: "Tratamientos capilares", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336764/Sty3_hk8sdy.png", disponibilidad: { "2026-06-02": ["10:00", "12:00", "16:00"], "2026-06-03": ["09:00", "13:00", "15:00"], "2026-06-05": ["11:00", "14:00", "18:00"], "2026-06-06": ["08:00", "09:00", "10:00"], "2026-06-09": ["13:00", "14:00", "15:00"] } },
-  { id: 4, empleadoId: 4, nombre: "Valentina López", especialidad: "Alisados y keratina", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336831/Sty4_yhgjef.png", disponibilidad: { "2026-06-02": ["09:00", "11:00", "13:00"], "2026-06-03": ["10:00", "12:00", "16:00"], "2026-06-05": ["08:00", "10:00", "12:00"], "2026-06-06": ["14:00", "16:00", "18:00"], "2026-06-09": ["09:00", "11:00", "13:00"] } },
-  { id: 5, empleadoId: 5, nombre: "Daniel Herrera", especialidad: "Corte caballero y barba", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336977/Sty5_wnafrw.png", disponibilidad: { "2026-06-02": ["09:00", "10:00", "11:00", "15:00"], "2026-06-03": ["10:00", "12:00", "14:00"], "2026-06-05": ["09:00", "11:00", "13:00"], "2026-06-06": ["08:00", "09:00", "10:00"], "2026-06-09": ["16:00", "17:00", "18:00"] } },
-  { id: 6, empleadoId: 6, nombre: "Santiago Ruiz", especialidad: "Barbería clásica y perfilado de barba", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777337017/Sty6_vgztvb.png", disponibilidad: { "2026-06-02": ["08:00", "09:00", "12:00"], "2026-06-03": ["11:00", "13:00", "15:00"], "2026-06-05": ["10:00", "12:00", "14:00"], "2026-06-06": ["09:00", "11:00", "13:00"], "2026-06-09": ["14:00", "16:00", "18:00"] } },
+  { id: 1, empleadoId: 1, nombre: "Ana García", especialidad: "Colorimetría", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336588/Sty1_wj2bmn.png", disponibilidad: { "2026-05-30": ["09:00", "10:00", "14:00", "15:00"], "2026-05-31": ["09:00", "11:00", "16:00"], "2026-06-02": ["09:00", "10:00", "14:00", "15:00"], "2026-06-03": ["09:00", "11:00", "16:00"], "2026-06-05": ["10:00", "13:00", "17:00"], "2026-06-06": ["09:00", "10:00", "11:00"], "2026-06-09": ["14:00", "15:00", "16:00"] } },
+  { id: 2, empleadoId: 2, nombre: "Laura Martínez", especialidad: "Cortes y peinados", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336622/Sty2_z1upkm.png", disponibilidad: { "2026-05-30": ["08:00", "09:00", "11:00"], "2026-05-31": ["10:00", "12:00", "15:00"], "2026-06-02": ["08:00", "09:00", "11:00"], "2026-06-03": ["10:00", "12:00", "15:00"], "2026-06-05": ["09:00", "11:00", "14:00"], "2026-06-06": ["13:00", "15:00", "17:00"], "2026-06-09": ["09:00", "10:00", "12:00"] } },
+  { id: 3, empleadoId: 3, nombre: "Camila Rodríguez", especialidad: "Tratamientos capilares", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336764/Sty3_hk8sdy.png", disponibilidad: { "2026-05-30": ["10:00", "12:00", "16:00"], "2026-05-31": ["09:00", "13:00", "15:00"], "2026-06-02": ["10:00", "12:00", "16:00"], "2026-06-03": ["09:00", "13:00", "15:00"], "2026-06-05": ["11:00", "14:00", "18:00"], "2026-06-06": ["08:00", "09:00", "10:00"], "2026-06-09": ["13:00", "14:00", "15:00"] } },
+  { id: 4, empleadoId: 4, nombre: "Valentina López", especialidad: "Alisados y keratina", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336831/Sty4_yhgjef.png", disponibilidad: { "2026-05-30": ["09:00", "11:00", "13:00"], "2026-05-31": ["10:00", "12:00", "16:00"], "2026-06-02": ["09:00", "11:00", "13:00"], "2026-06-03": ["10:00", "12:00", "16:00"], "2026-06-05": ["08:00", "10:00", "12:00"], "2026-06-06": ["14:00", "16:00", "18:00"], "2026-06-09": ["09:00", "11:00", "13:00"] } },
+  { id: 5, empleadoId: 5, nombre: "Daniel Herrera", especialidad: "Corte caballero y barba", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336977/Sty5_wnafrw.png", disponibilidad: { "2026-05-30": ["09:00", "10:00", "11:00", "15:00"], "2026-05-31": ["10:00", "12:00", "14:00"], "2026-06-02": ["09:00", "10:00", "11:00", "15:00"], "2026-06-03": ["10:00", "12:00", "14:00"], "2026-06-05": ["09:00", "11:00", "13:00"], "2026-06-06": ["08:00", "09:00", "10:00"], "2026-06-09": ["16:00", "17:00", "18:00"] } },
+  { id: 6, empleadoId: 6, nombre: "Santiago Ruiz", especialidad: "Barbería clásica y perfilado de barba", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777337017/Sty6_vgztvb.png", disponibilidad: { "2026-05-30": ["08:00", "09:00", "12:00"], "2026-05-31": ["11:00", "13:00", "15:00"], "2026-06-02": ["08:00", "09:00", "12:00"], "2026-06-03": ["11:00", "13:00", "15:00"], "2026-06-05": ["10:00", "12:00", "14:00"], "2026-06-06": ["09:00", "11:00", "13:00"], "2026-06-09": ["14:00", "16:00", "18:00"] } },
 ];
 
 /**
@@ -139,45 +139,99 @@ for (let i = 0; i < estilistas.length; i += cantCards) {
 }
 
 /**
- * Estado global de la selección de reserva.
+ * Estado global de la selección de reserva (calendario inicia en mes actual, Colombia).
  */
-const hoyReferencia = new Date();
+const ZONA_COLOMBIA = "America/Bogota";
+/** Después de las 19:00 (7 p.m.) en Colombia no se aceptan reservas para el mismo día. */
+const HORA_CIERRE_RESERVAS_HOY = 19;
+
+const partesColombiaInicial = obtenerPartesFechaColombia();
 const estado = {
   estilista: null,
   fecha: null,
   hora: null,
-  anio: hoyReferencia.getFullYear(),
-  mes: hoyReferencia.getMonth(),
+  anio: partesColombiaInicial.anio,
+  mes: partesColombiaInicial.mes,
 };
 
 const MESES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 const DIAS_SEM = ["D", "L", "M", "M", "J", "V", "S"];
 
+function obtenerPartesFechaColombia(fecha) {
+  const referencia = fecha || new Date();
+  const partes = new Intl.DateTimeFormat("en-CA", {
+    timeZone: ZONA_COLOMBIA,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(referencia);
+
+  const valor = (tipo) => parseInt(partes.find((p) => p.type === tipo).value, 10);
+  return {
+    anio: valor("year"),
+    mes: valor("month") - 1,
+    dia: valor("day"),
+    hora: valor("hour"),
+    minuto: valor("minute"),
+  };
+}
+
+function cadenaDesdePartes(partes) {
+  const mm = String(partes.mes + 1).padStart(2, "0");
+  const dd = String(partes.dia).padStart(2, "0");
+  return `${partes.anio}-${mm}-${dd}`;
+}
+
 function obtenerHoyCadena() {
-  const hoy = new Date();
-  const mm = String(hoy.getMonth() + 1).padStart(2, "0");
-  const dd = String(hoy.getDate()).padStart(2, "0");
-  return `${hoy.getFullYear()}-${mm}-${dd}`;
+  return cadenaDesdePartes(obtenerPartesFechaColombia());
+}
+
+function esHoyEnColombia(fechaStr) {
+  return fechaStr === obtenerHoyCadena();
+}
+
+function yaPasóCierreReservasHoy() {
+  const p = obtenerPartesFechaColombia();
+  return p.hora >= HORA_CIERRE_RESERVAS_HOY;
 }
 
 function esFechaPasada(fechaStr) {
   return fechaStr < obtenerHoyCadena();
 }
 
+/** Hoy no se reserva si ya pasó el cierre (7 p.m.); mañana y fechas futuras sí. */
+function fechaReservable(fechaStr) {
+  if (esFechaPasada(fechaStr)) return false;
+  if (esHoyEnColombia(fechaStr) && yaPasóCierreReservasHoy()) return false;
+  return true;
+}
+
 function puedeIrMesAnterior() {
-  const hoy = new Date();
-  return estado.anio > hoy.getFullYear()
-    || (estado.anio === hoy.getFullYear() && estado.mes > hoy.getMonth());
+  const p = obtenerPartesFechaColombia();
+  return estado.anio > p.anio || (estado.anio === p.anio && estado.mes > p.mes);
 }
 
 function filtrarHorasFuturas(fechaStr, horas) {
-  if (fechaStr !== obtenerHoyCadena()) return horas;
-  const ahora = new Date();
-  const minutosActuales = ahora.getHours() * 60 + ahora.getMinutes();
+  if (!esHoyEnColombia(fechaStr)) return horas;
+  const p = obtenerPartesFechaColombia();
+  const minutosActuales = p.hora * 60 + p.minuto;
   return horas.filter((hora) => {
     const [hh, mm] = hora.split(":").map(Number);
     return hh * 60 + mm > minutosActuales;
   });
+}
+
+function obtenerHorasReservables(fechaStr) {
+  if (!estado.estilista || !fechaReservable(fechaStr)) return [];
+  const horas = estado.estilista.disponibilidad[fechaStr] ?? [];
+  return filtrarHorasFuturas(fechaStr, horas);
+}
+
+function fechaTieneHorariosReservables(fechaStr) {
+  return obtenerHorasReservables(fechaStr).length > 0;
 }
 
 /**
@@ -221,7 +275,6 @@ function renderCalendario() {
     btnPrev.style.cursor = btnPrev.disabled ? "not-allowed" : "pointer";
   }
 
-  const diasDisponibles = estado.estilista ? new Set(Object.keys(estado.estilista.disponibilidad)) : new Set();
   const primerDia = new Date(estado.anio, estado.mes, 1).getDay();
   const diasDelMes = new Date(estado.anio, estado.mes + 1, 0).getDate();
 
@@ -233,7 +286,7 @@ function renderCalendario() {
     const mm = String(estado.mes + 1).padStart(2, "0");
     const dd = String(d).padStart(2, "0");
     const fechaStr = `${estado.anio}-${mm}-${dd}`;
-    const estaDisponible = diasDisponibles.has(fechaStr) && !esFechaPasada(fechaStr);
+    const estaDisponible = fechaTieneHorariosReservables(fechaStr);
     const estaSeleccionado = estado.fecha === fechaStr;
 
     let clases = "cal-dia";
@@ -251,7 +304,7 @@ function renderCalendario() {
  * Maneja la selección de una fecha en el calendario.
  */
 function seleccionarFecha(fechaStr) {
-  if (esFechaPasada(fechaStr)) return;
+  if (!fechaReservable(fechaStr) || !fechaTieneHorariosReservables(fechaStr)) return;
 
   estado.fecha = fechaStr;
   estado.hora = null;
@@ -267,7 +320,7 @@ function seleccionarFecha(fechaStr) {
  */
 function renderHoras(fechaStr) {
   const contenedor = document.getElementById("horasGrid");
-  const horas = filtrarHorasFuturas(fechaStr, estado.estilista.disponibilidad[fechaStr] ?? []);
+  const horas = obtenerHorasReservables(fechaStr);
 
   if (horas.length === 0) {
     contenedor.innerHTML = `<p class="text-muted" style="font-size:13px;">No hay horarios disponibles.</p>`;
@@ -366,10 +419,10 @@ function restaurarReservaPendiente() {
   document.getElementById("seccionCalendario").style.display = "block";
   initFechaHora(estilista);
 
-  if (pendiente.fecha && !esFechaPasada(pendiente.fecha)) {
+  if (pendiente.fecha && fechaTieneHorariosReservables(pendiente.fecha)) {
     seleccionarFecha(pendiente.fecha);
   }
-  if (pendiente.hora && estado.fecha) {
+  if (pendiente.hora && estado.fecha && obtenerHorasReservables(estado.fecha).includes(pendiente.hora)) {
     seleccionarHora(pendiente.hora);
   }
 
