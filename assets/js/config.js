@@ -1,5 +1,8 @@
 // Backend API desplegado en Render
 const API_BASE = "https://stylefactoryapi.onrender.com";
+if (typeof window !== "undefined") {
+    window.API_BASE = API_BASE;
+}
 
 /**
  * Frontend en GitHub Pages (repositorio EnithV/stylefactory).

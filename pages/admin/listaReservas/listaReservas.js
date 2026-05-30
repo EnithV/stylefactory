@@ -1,73 +1,133 @@
-/**
- * Módulo de gestión de reservas en el panel de administración.
- * Utiliza localStorage como almacenamiento temporal mientras se integra
- * con la API real del backend.
- */
-const KEY = "reservas";
-let indexAEliminar = null;
+import { listarReservas, eliminarReserva } from '../../../assets/js/apiClient.js';
 
-/**
- * Renderiza la tabla de reservas en el DOM.
- * Obtiene los datos de localStorage y genera las filas dinámicamente.
- */
+let reservasCache = [];
+let idAEliminar = null;
+
+function formatearFecha(fecha) {
+    if (!fecha) return '—';
+    const partes = String(fecha).split('-');
+    if (partes.length === 3) {
+        return partes[2] + '/' + partes[1] + '/' + partes[0];
+    }
+    return fecha;
+}
+
+function formatearHora(hora) {
+    if (!hora) return '—';
+    return String(hora).substring(0, 5);
+}
+
+function claseEstado(estado) {
+    const valor = (estado || '').toUpperCase();
+    if (valor === 'CONFIRMADA' || valor === 'PENDIENTE') return 'confirmada';
+    if (valor === 'CANCELADA') return 'cancelada';
+    return 'pendiente';
+}
+
+function etiquetaEstado(estado) {
+    const valor = (estado || '').toUpperCase();
+    if (valor === 'PENDIENTE') return 'Pendiente';
+    if (valor === 'CONFIRMADA') return 'Confirmada';
+    if (valor === 'CANCELADA') return 'Cancelada';
+    return estado || '—';
+}
+
+function mostrarCargandoTabla() {
+    const tbody = document.getElementById('tabla-reservas');
+    if (tbody) {
+        tbody.innerHTML =
+            '<tr><td colspan="8" class="text-center">Cargando reservas...</td></tr>';
+    }
+}
+
+function mostrarErrorTabla(mensaje) {
+    const tbody = document.getElementById('tabla-reservas');
+    if (tbody) {
+        tbody.innerHTML =
+            '<tr><td colspan="8" class="text-center">' + mensaje + '</td></tr>';
+    }
+}
+
 export function renderizarTablaReservas() {
-    const reservas = JSON.parse(localStorage.getItem(KEY)) || [];
-    const tbody = document.getElementById("tabla-reservas");
+    const tbody = document.getElementById('tabla-reservas');
     if (!tbody) return;
-    tbody.innerHTML = "";
+    tbody.innerHTML = '';
 
-    if (reservas.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center">No hay reservas registradas</td></tr>`;
+    if (reservasCache.length === 0) {
+        tbody.innerHTML =
+            '<tr><td colspan="8" class="text-center">No hay reservas registradas</td></tr>';
         return;
     }
 
-    reservas.forEach((reserva, index) => {
-        const fila = `
-            <tr>
-                <td>#ID-${String(reserva.id).padStart(2, '0')}</td>
-                <td>${reserva.cliente ? reserva.cliente.toUpperCase() : "—"}</td>
-                <td>${reserva.profesional?.nombre ?? "—"}</td>
-                <td>${reserva.servicio?.nombre ?? "—"}</td>
-                <td>${reserva.fecha ?? "—"}</td>
-                <td>${reserva.hora ?? "—"}</td>
-                <td><span class="badge-estado confirmada">Confirmada</span></td>
-                <td class="celda-acciones">
-                    <button class="btn-accion btn-eliminar-reserva" data-index="${index}" title="Eliminar">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
-        tbody.innerHTML += fila;
+    reservasCache.forEach(function (reserva) {
+        const estadoClase = claseEstado(reserva.estado);
+        tbody.innerHTML +=
+            '<tr>' +
+            '<td>#ID-' + String(reserva.id).padStart(2, '0') + '</td>' +
+            '<td>' + (reserva.nombreUsuario || '—').toUpperCase() + '</td>' +
+            '<td>' + (reserva.nombreEmpleado || '—') + '</td>' +
+            '<td>' + (reserva.nombreServicio || '—') + '</td>' +
+            '<td>' + formatearFecha(reserva.fecha) + '</td>' +
+            '<td>' + formatearHora(reserva.hora) + '</td>' +
+            '<td><span class="badge-estado ' + estadoClase + '">' + etiquetaEstado(reserva.estado) + '</span></td>' +
+            '<td class="celda-acciones">' +
+            '<button class="btn-accion btn-eliminar-reserva" data-id="' + reserva.id + '" title="Eliminar">' +
+            '<i class="fa-solid fa-trash"></i></button>' +
+            '</td>' +
+            '</tr>';
     });
 }
 
-/**
- * Inicializa la página de lista de reservas: renderiza la tabla y configura
- * los eventos de eliminación con confirmación modal.
- */
-export function initListaReservas() {
-    renderizarTablaReservas();
+async function cargarReservas() {
+    mostrarCargandoTabla();
+    try {
+        reservasCache = await listarReservas();
+        renderizarTablaReservas();
+    } catch (error) {
+        console.error('Error cargando reservas:', error);
+        const texto =
+            typeof mensajeErrorConexion === 'function'
+                ? mensajeErrorConexion(error)
+                : error.message;
+        mostrarErrorTabla('No se pudieron cargar las reservas: ' + texto);
+    }
+}
 
-    // Delegación de eventos para el botón de eliminar
-    document.addEventListener("click", function (e) {
-        const btnEliminar = e.target.closest(".btn-eliminar-reserva");
+export function initListaReservas() {
+    cargarReservas();
+
+    document.addEventListener('click', function (e) {
+        const btnEliminar = e.target.closest('.btn-eliminar-reserva');
         if (!btnEliminar) return;
-        indexAEliminar = btnEliminar.dataset.index;
-        const modal = new bootstrap.Modal(document.getElementById("modalEliminarReserva"));
+        idAEliminar = btnEliminar.dataset.id;
+        const modal = new bootstrap.Modal(document.getElementById('modalEliminarReserva'));
         modal.show();
     });
 
-    // Configura el botón de confirmación de eliminación
-    const btnConfirmar = document.getElementById("btn-confirmar-eliminar-reserva");
+    const btnConfirmar = document.getElementById('btn-confirmar-eliminar-reserva');
     if (btnConfirmar) {
-        btnConfirmar.addEventListener("click", function () {
-            const lista = JSON.parse(localStorage.getItem(KEY)) || [];
-            lista.splice(Number(indexAEliminar), 1);
-            localStorage.setItem(KEY, JSON.stringify(lista));
-            const modal = bootstrap.Modal.getInstance(document.getElementById("modalEliminarReserva"));
-            modal.hide();
-            renderizarTablaReservas();
+        btnConfirmar.addEventListener('click', async function () {
+            if (!idAEliminar) return;
+
+            btnConfirmar.disabled = true;
+            try {
+                await eliminarReserva(idAEliminar);
+                const modal = bootstrap.Modal.getInstance(
+                    document.getElementById('modalEliminarReserva')
+                );
+                modal.hide();
+                idAEliminar = null;
+                await cargarReservas();
+            } catch (error) {
+                console.error('Error eliminando reserva:', error);
+                const texto =
+                    typeof mensajeErrorConexion === 'function'
+                        ? mensajeErrorConexion(error)
+                        : error.message;
+                alert('No se pudo eliminar la reserva: ' + texto);
+            } finally {
+                btnConfirmar.disabled = false;
+            }
         });
     }
 }

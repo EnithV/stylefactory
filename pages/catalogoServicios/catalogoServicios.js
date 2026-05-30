@@ -1,10 +1,11 @@
 import { productos } from '../../assets/js/productosCatalogo.js';
+import { listarServicios } from '../../assets/js/apiClient.js';
 
 let filtroTipoActivo = 'todos';
+let catalogoServicios = [];
 
 /**
  * Actualiza la interfaz del navbar según el estado de sesión del usuario.
- * Muestra el nombre del usuario logueado y oculta el botón de acceder.
  */
 function actualizarNavbar() {
     const usuarioLogueado = localStorage.getItem('usuarioLogueado');
@@ -36,31 +37,32 @@ function actualizarNavbar() {
     }
 }
 
-/**
- * Cierra la sesión del usuario y redirige al inicio.
- */
 function cerrarSesion() {
     localStorage.removeItem('usuarioLogueado');
+    localStorage.removeItem('token');
     actualizarNavbar();
-    window.location.href = '../../index.html';
+    window.location.href = typeof urlApp === 'function' ? urlApp('/index.html') : '../../index.html';
 }
 
-/**
- * Combina datos del catálogo por defecto con los de localStorage (p. ej. tipo, duración).
- */
 function enriquecerProducto(producto) {
     const base = productos.find(function (p) { return p.id === producto.id; }) || {};
     return Object.assign({}, base, producto, {
         tipo: producto.tipo || base.tipo || '',
-        duracionMinutos: producto.duracionMinutos ?? base.duracionMinutos ?? 60
+        duracionMinutos: producto.duracionMinutos ?? base.duracionMinutos ?? 60,
+        imagen: producto.imagen || base.imagen || '',
     });
 }
 
-function obtenerProductosActivos() {
+function obtenerProductosFallback() {
     const lista = JSON.parse(localStorage.getItem('Lista de Servicios')) || productos;
-    return lista
-        .filter(producto => producto.status === true || producto.status === 'true')
-        .map(enriquecerProducto);
+    return lista.map(enriquecerProducto);
+}
+
+function obtenerProductosActivos() {
+    const fuente = catalogoServicios.length > 0 ? catalogoServicios : obtenerProductosFallback();
+    return fuente.filter(function (producto) {
+        return producto.status === true || producto.status === 'true';
+    });
 }
 
 function slugTipo(tipo) {
@@ -118,9 +120,15 @@ function renderizarFiltros(productosActivos) {
     });
 }
 
-/**
- * Renderiza el catálogo de servicios en el contenedor con id 'cards-container'.
- */
+function mostrarEstadoCarga() {
+    const container = document.getElementById('cards-container');
+    if (container) {
+        container.style.display = 'grid';
+        container.innerHTML =
+            '<p class="catalogo-cargando">Cargando servicios...</p>';
+    }
+}
+
 function renderizarCatalogo() {
     const container = document.getElementById('cards-container');
     const vacio = document.getElementById('catalogo-vacio');
@@ -179,9 +187,8 @@ function renderizarCatalogo() {
     container.querySelectorAll('.btn-reservar').forEach(function (boton) {
         boton.addEventListener('click', function () {
             const id = parseInt(this.getAttribute('data-id'), 10);
-            const listaActual = JSON.parse(localStorage.getItem('Lista de Servicios')) || productos;
             const productoSeleccionado = enriquecerProducto(
-                listaActual.find(function (p) { return p.id === id; }) ||
+                obtenerProductosActivos().find(function (p) { return p.id === id; }) ||
                 productos.find(function (p) { return p.id === id; })
             );
 
@@ -189,6 +196,17 @@ function renderizarCatalogo() {
             window.location.href = '../reservations/reservations.html';
         });
     });
+}
+
+async function cargarCatalogoDesdeApi() {
+    mostrarEstadoCarga();
+    try {
+        catalogoServicios = await listarServicios();
+    } catch (error) {
+        console.warn('Catálogo API no disponible, usando datos locales:', error);
+        catalogoServicios = obtenerProductosFallback();
+    }
+    renderizarCatalogo();
 }
 
 if (document.getElementById('cards-container')) {
@@ -223,9 +241,9 @@ if (document.getElementById('cards-container')) {
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', renderizarCatalogo);
+        document.addEventListener('DOMContentLoaded', cargarCatalogoDesdeApi);
     } else {
-        renderizarCatalogo();
+        cargarCatalogoDesdeApi();
     }
 }
 

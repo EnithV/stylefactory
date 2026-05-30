@@ -29,6 +29,14 @@
             <label>Duración estimada (min)</label>
             <span class="error" id="errorDuracion"></span>
         </div>
+
+        <div class="input-group ultimo_input_group">
+            <select id="tipoServicio" required>
+                <option value="" disabled selected>Seleccione tipo</option>
+            </select>
+            <label>Tipo de servicio</label>
+            <span class="error" id="errorTipo"></span>
+        </div>
         <div class="contenedor_subir_imagen">
             <label>Subir Imagen</label>
             <div class="caja_subir">
@@ -40,12 +48,13 @@
         <div class="status">
             <span>Status:</span>
             <input type="radio" id="activo" name="status" value="true" checked>
-            <label for="opcion1">Activo</label>
+            <label for="activo">Activo</label>
+            <input type="radio" id="inactivo" name="status" value="false">
+            <label for="inactivo">Inactivo</label>
         </div>
-        <input type="hidden" id="editIndex" value="">
+        <input type="hidden" id="editId" value="">
+        <input type="hidden" id="imagenActual" value="">
         <button type="submit" class="btn-enviar">Crear Servicio</button>
 
     </form>
 </div>
-
-<script type="module" src="formCreacionServicios.js"></script>

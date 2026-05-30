@@ -1,128 +1,153 @@
-/**
- * Importa las dependencias necesarias para la gestión de servicios.
- * productos: catálogo de servicios por defecto.
- * initFormulario: función que inicializa el formulario de creación/edición.
- */
-import { productos } from "../../../assets/js/productosCatalogo.js";
-import { initFormulario } from "../../../components/forms/creacionServicios/formCreacionServicios.js";
+import {
+    listarServicios,
+    eliminarServicio,
+} from '../../../assets/js/apiClient.js';
+import {
+    initFormulario,
+    prepararEdicionServicio,
+    resetFormularioServicio,
+} from '../../../components/forms/creacionServicios/formCreacionServicios.js';
 
-const KEY = "Lista de Servicios";
-let indexAEliminar = null;
+let serviciosCache = [];
+let idAEliminar = null;
 
-/**
- * Renderiza la tabla de servicios en el DOM.
- * Obtiene los datos de localStorage y genera las filas dinámicamente.
- */
-export function renderizarTabla() {
-  const servicios = JSON.parse(localStorage.getItem(KEY)) || [];
-  const tbody = document.getElementById("tabla-servicios");
-  if (!tbody) return;
-  tbody.innerHTML = "";
-
-  servicios.forEach((servicio, index) => {
-    const estadoClase = servicio.status === true || servicio.status === "true" ? "confirmada" : "cancelada";
-    const estadoTexto = servicio.status === true || servicio.status === "true" ? "Activo" : "Inactivo";
-    const id = servicio.id ?? index + 1;
-
-    const duracion = servicio.duracionMinutos ?? 60;
-
-    const fila = `
-      <tr>
-        <td>#ID-${id}</td>
-        <td>${servicio.nombre}</td>
-        <td>
-          <div class="text-truncate">${servicio.descripcion}</div>
-        </td>
-        <td>${duracion} min</td>
-        <td>
-          <span class="badge-estado ${estadoClase}">${estadoTexto}</span>
-        </td>
-        <td class="celda-acciones">
-          <button class="btn-accion btn-editar" data-index="${index}" title="Editar">
-            <i class="fa-solid fa-pen"></i>
-          </button>
-          <button class="btn-accion btn-eliminar" data-index="${index}" title="Eliminar">
-            <i class="fa-solid fa-trash"></i>
-          </button>
-        </td>
-      </tr>
-    `;
-    tbody.innerHTML += fila;
-  });
+function mostrarCargandoTabla() {
+    const tbody = document.getElementById('tabla-servicios');
+    if (tbody) {
+        tbody.innerHTML =
+            '<tr><td colspan="6" class="text-center">Cargando servicios...</td></tr>';
+    }
 }
 
-/**
- * Inicializa la página de lista de servicios: carga el formulario,
- * renderiza la tabla y configura los eventos de edición y eliminación.
- */
+function mostrarErrorTabla(mensaje) {
+    const tbody = document.getElementById('tabla-servicios');
+    if (tbody) {
+        tbody.innerHTML =
+            '<tr><td colspan="6" class="text-center">' + mensaje + '</td></tr>';
+    }
+}
+
+export function renderizarTabla() {
+    const tbody = document.getElementById('tabla-servicios');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (serviciosCache.length === 0) {
+        tbody.innerHTML =
+            '<tr><td colspan="6" class="text-center">No hay servicios registrados</td></tr>';
+        return;
+    }
+
+    serviciosCache.forEach(function (servicio) {
+        const estadoClase =
+            servicio.status === true || servicio.status === 'true'
+                ? 'confirmada'
+                : 'cancelada';
+        const estadoTexto =
+            servicio.status === true || servicio.status === 'true'
+                ? 'Activo'
+                : 'Inactivo';
+        const duracion = servicio.duracionMinutos ?? 60;
+
+        tbody.innerHTML +=
+            '<tr>' +
+            '<td>#ID-' + servicio.id + '</td>' +
+            '<td>' + servicio.nombre + '</td>' +
+            '<td><div class="text-truncate">' + servicio.descripcion + '</div></td>' +
+            '<td>' + duracion + ' min</td>' +
+            '<td><span class="badge-estado ' + estadoClase + '">' + estadoTexto + '</span></td>' +
+            '<td class="celda-acciones">' +
+            '<button class="btn-accion btn-editar" data-id="' + servicio.id + '" title="Editar">' +
+            '<i class="fa-solid fa-pen"></i></button>' +
+            '<button class="btn-accion btn-eliminar" data-id="' + servicio.id + '" title="Eliminar">' +
+            '<i class="fa-solid fa-trash"></i></button>' +
+            '</td>' +
+            '</tr>';
+    });
+}
+
+async function cargarServicios() {
+    mostrarCargandoTabla();
+    try {
+        serviciosCache = await listarServicios();
+        renderizarTabla();
+    } catch (error) {
+        console.error('Error cargando servicios:', error);
+        const texto =
+            typeof mensajeErrorConexion === 'function'
+                ? mensajeErrorConexion(error)
+                : error.message;
+        mostrarErrorTabla('No se pudieron cargar los servicios: ' + texto);
+    }
+}
+
 export function initListaServicios() {
-  const servicios = JSON.parse(localStorage.getItem(KEY)) || [];
-  if (servicios.length === 0) {
-    productos.forEach((elemento) => servicios.push(elemento));
-    localStorage.setItem(KEY, JSON.stringify(servicios));
-  }
+    fetch('../../../components/forms/creacionServicios/formCreacionServicios.html')
+        .then(function (res) { return res.text(); })
+        .then(function (html) {
+            document.getElementById('form-services').innerHTML = html;
+            initFormulario(cargarServicios);
 
-  /**
-   * Carga el formulario de creación de servicios desde su componente HTML.
-   * La ruta es relativa a la ubicación actual (pages/admin/listaServicios/).
-   */
-  fetch("../../../components/forms/creacionServicios/formCreacionServicios.html")
-    .then((res) => res.text())
-    .then((html) => {
-      document.getElementById("form-services").innerHTML = html;
-      initFormulario(renderizarTabla);
-    })
-    .catch((err) => console.error("Error cargando el formulario:", err));
+            const btnAgregar = document.querySelector('.btn-agregar-servicio');
+            if (btnAgregar) {
+                btnAgregar.addEventListener('click', resetFormularioServicio);
+            }
+        })
+        .catch(function (err) { console.error('Error cargando el formulario:', err); });
 
-  renderizarTabla();
+    cargarServicios();
 
-  // Limpia el foco cuando se cierra el modal de eliminación
-  const modalElement = document.getElementById("modalEliminar");
-  if (modalElement) {
-    modalElement.addEventListener("hidden.bs.modal", () => {
-      if (document.activeElement) document.activeElement.blur();
-      document.body.focus();
-    });
-  }
-
-  // Delegación de eventos para los botones de editar y eliminar
-  document.addEventListener("click", function (e) {
-    const btnEliminar = e.target.closest(".btn-eliminar");
-    if (btnEliminar) {
-      indexAEliminar = btnEliminar.dataset.index;
-      const modal = new bootstrap.Modal(document.getElementById("modalEliminar"));
-      modal.show();
-      return;
+    const modalElement = document.getElementById('modalEliminar');
+    if (modalElement) {
+        modalElement.addEventListener('hidden.bs.modal', function () {
+            if (document.activeElement) document.activeElement.blur();
+            document.body.focus();
+        });
     }
 
-    const btnEditar = e.target.closest(".btn-editar");
-    if (btnEditar) {
-      const index = btnEditar.dataset.index;
-      const lista = JSON.parse(localStorage.getItem(KEY)) || [];
-      const servicio = lista[index];
+    document.addEventListener('click', function (e) {
+        const btnEliminar = e.target.closest('.btn-eliminar');
+        if (btnEliminar) {
+            idAEliminar = btnEliminar.dataset.id;
+            const modal = new bootstrap.Modal(document.getElementById('modalEliminar'));
+            modal.show();
+            return;
+        }
 
-      document.getElementById("nombre").value = servicio.nombre;
-      document.getElementById("descripcion").value = servicio.descripcion;
-      document.getElementById("precio").value = servicio.precio;
-      document.getElementById("duracionMinutos").value = servicio.duracionMinutos ?? 60;
-      document.getElementById("editIndex").value = index;
-      document.querySelector(".btn-enviar").textContent = "Guardar Cambios";
+        const btnEditar = e.target.closest('.btn-editar');
+        if (btnEditar) {
+            const id = Number(btnEditar.dataset.id);
+            const servicio = serviciosCache.find(function (s) { return s.id === id; });
+            if (!servicio) return;
 
-      const modal = new bootstrap.Modal(document.getElementById("exampleModal"));
-      modal.show();
-    }
-  });
-
-  // Configura el botón de confirmación de eliminación
-  const btnConfirmar = document.getElementById("btn-confirmar-eliminar");
-  if (btnConfirmar) {
-    btnConfirmar.addEventListener("click", function () {
-      const lista = JSON.parse(localStorage.getItem(KEY)) || [];
-      lista.splice(Number(indexAEliminar), 1);
-      localStorage.setItem(KEY, JSON.stringify(lista));
-      const modal = bootstrap.Modal.getInstance(document.getElementById("modalEliminar"));
-      modal.hide();
-      renderizarTabla();
+            prepararEdicionServicio(servicio);
+            const modal = new bootstrap.Modal(document.getElementById('exampleModal'));
+            modal.show();
+        }
     });
-  }
+
+    const btnConfirmar = document.getElementById('btn-confirmar-eliminar');
+    if (btnConfirmar) {
+        btnConfirmar.addEventListener('click', async function () {
+            if (!idAEliminar) return;
+
+            btnConfirmar.disabled = true;
+            try {
+                await eliminarServicio(idAEliminar);
+                const modal = bootstrap.Modal.getInstance(document.getElementById('modalEliminar'));
+                modal.hide();
+                idAEliminar = null;
+                await cargarServicios();
+            } catch (error) {
+                console.error('Error eliminando servicio:', error);
+                const texto =
+                    typeof mensajeErrorConexion === 'function'
+                        ? mensajeErrorConexion(error)
+                        : error.message;
+                alert('No se pudo eliminar el servicio: ' + texto);
+            } finally {
+                btnConfirmar.disabled = false;
+            }
+        });
+    }
 }

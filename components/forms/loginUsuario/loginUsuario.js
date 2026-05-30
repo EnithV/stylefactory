@@ -40,11 +40,20 @@
         if (me) me.style.display = 'none';
     }
 
-    function obtenerUrlRedireccion() {
-        if (typeof urlApp === "function") {
-            return urlApp("/index.html");
+    function obtenerUrlRedireccion(usuario) {
+        if (typeof ReservaPendiente !== 'undefined' && ReservaPendiente.debeRetomar()) {
+            return ReservaPendiente.urlPaginaReservas();
         }
-        return "../../index.html";
+        var rol = ((usuario && usuario.rol) || '').toUpperCase();
+        if (rol === 'ADMIN') {
+            return typeof urlApp === 'function'
+                ? urlApp('/pages/admin/panelDeControl/panelControl.html')
+                : '../../../pages/admin/panelDeControl/panelControl.html';
+        }
+        if (typeof urlApp === 'function') {
+            return urlApp('/index.html');
+        }
+        return '../../../index.html';
     }
 
     function initLoginForm() {
@@ -121,12 +130,12 @@
                     }
 
                     setTimeout(function () {
-                        var url;
-                        if (typeof ReservaPendiente !== 'undefined' && ReservaPendiente.debeRetomar()) {
-                            url = ReservaPendiente.urlPaginaReservas();
-                        } else {
-                            url = obtenerUrlRedireccion();
-                        }
+                        var url = obtenerUrlRedireccion({
+                            id: data.id,
+                            nombre: data.nombre,
+                            correo: data.correo,
+                            rol: data.rol
+                        });
                         if (window.parent && window.parent !== window) {
                             window.parent.location.href = url;
                         } else {

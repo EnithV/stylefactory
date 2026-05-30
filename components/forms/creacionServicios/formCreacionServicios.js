@@ -1,32 +1,20 @@
-import { productos } from '../../../assets/js/productosCatalogo.js';
+import {
+    crearServicio,
+    actualizarServicio,
+} from '../../../assets/js/apiClient.js';
 
-function leerListaServicios() {
-    try {
-        return JSON.parse(localStorage.getItem("Lista de Servicios")) || [];
-    } catch (e) {
-        return [];
-    }
-}
-
-function guardarListaServicios(lista) {
-    try {
-        localStorage.setItem("Lista de Servicios", JSON.stringify(lista));
-    } catch (e) {
-        console.warn("No se pudo guardar en localStorage:", e);
-    }
-}
-
-let listaDeServicios = leerListaServicios();
-
-if (listaDeServicios.length === 0) {
-    productos.forEach(function (elemento) {
-        listaDeServicios.push(elemento);
-    });
-    guardarListaServicios(listaDeServicios);
-}
+const TIPOS_SERVICIO = [
+    'Corte',
+    'Color',
+    'Tratamiento',
+    'Barbería',
+    'Peinado',
+    'Estética',
+    'General',
+];
 
 function validar(valor) {
-    return valor.trim() !== "";
+    return valor.trim() !== '';
 }
 
 function mostrarError(errorId, mensaje) {
@@ -39,7 +27,7 @@ function limpiarError(errorId) {
     if (errorSpan) errorSpan.textContent = '';
 }
 
-function validarFormulario(nombre, descripcion, precio, duracionMinutos) {
+function validarFormulario(nombre, descripcion, precio, duracionMinutos, tipoServicio) {
     let esValido = true;
 
     if (!validar(nombre)) {
@@ -53,7 +41,7 @@ function validarFormulario(nombre, descripcion, precio, duracionMinutos) {
     } else limpiarError('errorDescripcion');
 
     if (isNaN(Number(precio)) || Number(precio) <= 0) {
-        mostrarError('errorPrecio', '¡Introduzca un precio Valido!');
+        mostrarError('errorPrecio', 'Introduzca un precio valido');
         esValido = false;
     } else limpiarError('errorPrecio');
 
@@ -63,107 +51,154 @@ function validarFormulario(nombre, descripcion, precio, duracionMinutos) {
         esValido = false;
     } else limpiarError('errorDuracion');
 
+    if (!validar(tipoServicio)) {
+        mostrarError('errorTipo', 'Seleccione un tipo de servicio');
+        esValido = false;
+    } else limpiarError('errorTipo');
+
     return esValido;
 }
 
-export function initFormulario(onServicioGuardado) {
-    let imagenURL = "";
+function resetFormulario() {
+    document.getElementById('editId').value = '';
+    document.querySelector('.btn-enviar').textContent = 'Crear Servicio';
+    document.getElementById('formCreacionServicios').reset();
+    const preview = document.getElementById('preview');
+    if (preview) preview.style.display = 'none';
+}
 
-    const botonEnviar = document.querySelector(".btn-enviar");
+export function initFormulario(onServicioGuardado) {
+    let imagenURL = '';
+
+    const botonEnviar = document.querySelector('.btn-enviar');
     const inputImagen = document.getElementById('inputImagen');
     const preview = document.getElementById('preview');
+    const selectTipo = document.getElementById('tipoServicio');
 
-    inputImagen.addEventListener("change", async function () {
+    if (selectTipo && selectTipo.options.length <= 1) {
+        TIPOS_SERVICIO.forEach(function (tipo) {
+            const opcion = document.createElement('option');
+            opcion.value = tipo;
+            opcion.textContent = tipo;
+            selectTipo.appendChild(opcion);
+        });
+    }
+
+    inputImagen.addEventListener('change', async function () {
         const archivo = this.files[0];
         if (!archivo) return;
 
         const formData = new FormData();
-        formData.append("file", archivo);
-        formData.append("upload_preset", "servicios_app");
+        formData.append('file', archivo);
+        formData.append('upload_preset', 'servicios_app');
 
         try {
             const respuesta = await fetch(
-                "https://api.cloudinary.com/v1_1/dxp3axcje/image/upload",
-                { method: "POST", body: formData }
+                'https://api.cloudinary.com/v1_1/dxp3axcje/image/upload',
+                { method: 'POST', body: formData }
             );
             const data = await respuesta.json();
             imagenURL = data.secure_url;
             preview.src = imagenURL;
-            preview.style.display = "block";
+            preview.style.display = 'block';
         } catch (error) {
-            console.error("Error subiendo imagen:", error);
+            console.error('Error subiendo imagen:', error);
         }
     });
 
-    botonEnviar.addEventListener("click", function (event) {
+    botonEnviar.addEventListener('click', async function (event) {
         event.preventDefault();
 
-        const nombre      = document.querySelector("#nombre").value;
-        const descripcion = document.querySelector("#descripcion").value;
-        const precio      = document.querySelector("#precio").value;
-        const duracionMinutos = document.querySelector("#duracionMinutos").value;
-        const statusEl    = document.querySelector('input[name="status"]:checked');
-        const status      = statusEl ? statusEl.value : "true";
-        const editIndex   = document.getElementById("editIndex").value;
-        const esEdicion   = editIndex !== "";
+        const nombre = document.querySelector('#nombre').value;
+        const descripcion = document.querySelector('#descripcion').value;
+        const precio = document.querySelector('#precio').value;
+        const duracionMinutos = document.querySelector('#duracionMinutos').value;
+        const tipoServicio = document.querySelector('#tipoServicio').value;
+        const statusEl = document.querySelector('input[name="status"]:checked');
+        const status = statusEl ? statusEl.value : 'true';
+        const editId = document.getElementById('editId').value;
+        const esEdicion = editId !== '';
+        const imagenActual = document.getElementById('imagenActual').value;
 
-        const esValido = validarFormulario(nombre, descripcion, precio, duracionMinutos);
+        const esValido = validarFormulario(
+            nombre,
+            descripcion,
+            precio,
+            duracionMinutos,
+            tipoServicio
+        );
 
-        if (esValido) {
-            const listaActual = JSON.parse(localStorage.getItem("Lista de Servicios")) || [];
-            const duracionNum = Number(duracionMinutos);
+        if (!esValido) {
+            alert('El formulario esta incorrecto');
+            return;
+        }
 
+        const payload = {
+            nombre,
+            descripcion,
+            precio,
+            duracionMinutos: Number(duracionMinutos),
+            tipoServicio,
+            status,
+            imagen: imagenURL || imagenActual || undefined,
+        };
+
+        const textoOriginal = botonEnviar.textContent;
+        botonEnviar.disabled = true;
+        botonEnviar.textContent = esEdicion ? 'Guardando...' : 'Creando...';
+
+        try {
             if (esEdicion) {
-                listaActual[editIndex] = {
-                    ...listaActual[editIndex],
-                    nombre,
-                    descripcion,
-                    precio,
-                    duracionMinutos: duracionNum,
-                    status,
-                    imagen: imagenURL || listaActual[editIndex].imagen
-                };
-                localStorage.setItem("Lista de Servicios", JSON.stringify(listaActual));
-                alert("Servicio Actualizado");
-
-                const modal = bootstrap.Modal.getInstance(document.getElementById("exampleModal"));
-                if (modal) modal.hide();
-                if (onServicioGuardado) onServicioGuardado();
+                await actualizarServicio(editId, payload);
+                alert('Servicio actualizado');
             } else {
-                const existe = listaActual.some(e => e.nombre === nombre);
-
-                if (!existe) {
-                    const maxId = listaActual.length > 0
-                        ? Math.max(...listaActual.map(s => s.id || 0))
-                        : 0;
-                    const servicio = {
-                        id: maxId + 1,
-                        nombre,
-                        descripcion,
-                        precio,
-                        duracionMinutos: duracionNum,
-                        status,
-                        imagen: imagenURL
-                    };
-                    listaActual.push(servicio);
-                    localStorage.setItem("Lista de Servicios", JSON.stringify(listaActual));
-                    alert("Servicio Agregado");
-
-                    const modal = bootstrap.Modal.getInstance(document.getElementById("exampleModal"));
-                    if (modal) modal.hide();
-                    if (onServicioGuardado) onServicioGuardado();
-                } else {
-                    alert("El Servicio ya Existe");
-                }
+                await crearServicio(payload);
+                alert('Servicio agregado');
             }
 
-            document.getElementById("editIndex").value = "";
-            document.querySelector(".btn-enviar").textContent = "Crear Servicio";
-            document.getElementById("formCreacionServicios").reset();
-            preview.style.display = "none";
-            imagenURL = "";
-        } else {
-            alert("El formulario esta Incorrecto");
+            const modal = bootstrap.Modal.getInstance(document.getElementById('exampleModal'));
+            if (modal) modal.hide();
+            resetFormulario();
+            imagenURL = '';
+            if (onServicioGuardado) onServicioGuardado();
+        } catch (error) {
+            console.error('Error guardando servicio:', error);
+            const texto =
+                typeof mensajeErrorConexion === 'function'
+                    ? mensajeErrorConexion(error)
+                    : error.message;
+            alert('No se pudo guardar el servicio: ' + texto);
+        } finally {
+            botonEnviar.disabled = false;
+            botonEnviar.textContent = textoOriginal;
         }
     });
+}
+
+export function prepararEdicionServicio(servicio) {
+    document.getElementById('nombre').value = servicio.nombre || '';
+    document.getElementById('descripcion').value = servicio.descripcion || '';
+    document.getElementById('precio').value = servicio.precio || '';
+    document.getElementById('duracionMinutos').value = servicio.duracionMinutos ?? 60;
+    document.getElementById('tipoServicio').value = servicio.tipo || 'General';
+    document.getElementById('editId').value = servicio.id;
+    document.getElementById('imagenActual').value = servicio.imagen || '';
+
+    const activo = servicio.status === true || servicio.status === 'true';
+    const radioActivo = document.getElementById('activo');
+    const radioInactivo = document.getElementById('inactivo');
+    if (radioActivo) radioActivo.checked = activo;
+    if (radioInactivo) radioInactivo.checked = !activo;
+
+    const preview = document.getElementById('preview');
+    if (preview && servicio.imagen) {
+        preview.src = servicio.imagen;
+        preview.style.display = 'block';
+    }
+
+    document.querySelector('.btn-enviar').textContent = 'Guardar Cambios';
+}
+
+export function resetFormularioServicio() {
+    resetFormulario();
 }

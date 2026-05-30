@@ -8,6 +8,10 @@
     }
 
     function verificarSesionAdmin() {
+        if (!localStorage.getItem('token')) {
+            redirigirLogin();
+            return false;
+        }
         var raw = localStorage.getItem('usuarioLogueado');
         if (!raw) {
             redirigirLogin();
