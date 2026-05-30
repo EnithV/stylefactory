@@ -23,7 +23,7 @@ function limpiarError(errorId) {
     if (errorSpan) errorSpan.textContent = '';
 }
 
-function validarFormulario(nombre, descripcion, precio) {
+function validarFormulario(nombre, descripcion, precio, duracionMinutos) {
     let esValido = true;
 
     if (!validar(nombre)) {
@@ -40,6 +40,12 @@ function validarFormulario(nombre, descripcion, precio) {
         mostrarError('errorPrecio', '¡Introduzca un precio Valido!');
         esValido = false;
     } else limpiarError('errorPrecio');
+
+    const duracion = Number(duracionMinutos);
+    if (isNaN(duracion) || duracion < 15 || duracion > 480) {
+        mostrarError('errorDuracion', 'La duración debe estar entre 15 y 480 minutos');
+        esValido = false;
+    } else limpiarError('errorDuracion');
 
     return esValido;
 }
@@ -79,15 +85,17 @@ export function initFormulario(onServicioGuardado) {
         const nombre      = document.querySelector("#nombre").value;
         const descripcion = document.querySelector("#descripcion").value;
         const precio      = document.querySelector("#precio").value;
+        const duracionMinutos = document.querySelector("#duracionMinutos").value;
         const statusEl    = document.querySelector('input[name="status"]:checked');
         const status      = statusEl ? statusEl.value : "true";
         const editIndex   = document.getElementById("editIndex").value;
         const esEdicion   = editIndex !== "";
 
-        const esValido = validarFormulario(nombre, descripcion, precio);
+        const esValido = validarFormulario(nombre, descripcion, precio, duracionMinutos);
 
         if (esValido) {
             const listaActual = JSON.parse(localStorage.getItem("Lista de Servicios")) || [];
+            const duracionNum = Number(duracionMinutos);
 
             if (esEdicion) {
                 listaActual[editIndex] = {
@@ -95,6 +103,7 @@ export function initFormulario(onServicioGuardado) {
                     nombre,
                     descripcion,
                     precio,
+                    duracionMinutos: duracionNum,
                     status,
                     imagen: imagenURL || listaActual[editIndex].imagen
                 };
@@ -111,7 +120,15 @@ export function initFormulario(onServicioGuardado) {
                     const maxId = listaActual.length > 0
                         ? Math.max(...listaActual.map(s => s.id || 0))
                         : 0;
-                    const servicio = { id: maxId + 1, nombre, descripcion, precio, status, imagen: imagenURL };
+                    const servicio = {
+                        id: maxId + 1,
+                        nombre,
+                        descripcion,
+                        precio,
+                        duracionMinutos: duracionNum,
+                        status,
+                        imagen: imagenURL
+                    };
                     listaActual.push(servicio);
                     localStorage.setItem("Lista de Servicios", JSON.stringify(listaActual));
                     alert("Servicio Agregado");

@@ -50,25 +50,27 @@ ON CONFLICT (id) DO UPDATE SET
 
 -- -----------------------------------------------------------------------------
 -- SERVICIOS (id_servicio 1-10 = id en catalogoServicios.js)
+-- duracion_minutos: tiempo estimado para reservas (Fase 2)
 -- -----------------------------------------------------------------------------
-INSERT INTO servicios (id_servicio, nombre, descripcion, url_imagen, estado, precio, tipo) VALUES
-(1,  'Corte de Cabello Premium', 'Corte moderno con técnicas personalizadas según tu tipo de cabello.', 'https://res.cloudinary.com/diq2bkb49/image/upload/v1776957776/cortePremium_engl79.png', true, 45000,  'Corte'),
-(2,  'Tinte y Coloración',       'Coloración de alta calidad con marcas premium. Resultados duraderos.', 'https://res.cloudinary.com/diq2bkb49/image/upload/v1776957782/tinteColoracion_xlsf5v.png', true, 120000, 'Color'),
-(3,  'Tratamiento de Keratina',  'Alisado profundo que elimina el frizz y deja el cabello sedoso.',       'https://res.cloudinary.com/diq2bkb49/image/upload/v1776957777/keratina_bjqvof.png', true, 180000, 'Tratamiento'),
-(4,  'Barba y Afeitado',         'Servicio completo de perfilado de barba y afeitado clásico.',           'https://res.cloudinary.com/diq2bkb49/image/upload/v1776957775/barbaAfeitado_fcacso.png', true, 35000,  'Barbería'),
-(5,  'Peinado para Eventos',     'Peinados profesionales para bodas, graduaciones y eventos especiales.', 'https://res.cloudinary.com/diq2bkb49/image/upload/v1776957782/peinadoEventos_bk9cyr.png', true, 80000,  'Peinado'),
-(6,  'Mechas y Reflejos',        'Técnicas de mechas californianas, babylights y reflejos.',              'https://res.cloudinary.com/diq2bkb49/image/upload/v1776957780/mechasReflejos_p5hod7.png', true, 150000, 'Color'),
-(7,  'Tratamiento Capilar',      'Hidratación y nutrición profunda para cabello maltratado.',             'https://res.cloudinary.com/diq2bkb49/image/upload/v1776957783/tratamientoCapilar_mqkb13.png', true, 65000,  'Tratamiento'),
-(8,  'Cepillado Brasileño',      'Alisado progresivo que reduce el volumen y da brillo.',                 'https://res.cloudinary.com/diq2bkb49/image/upload/v1776957775/cepilladoBrasile%C3%B1o_ela99r.png', true, 160000, 'Tratamiento'),
-(9,  'Maquillaje Profesional',   'Maquillaje para ocasiones especiales con productos de alta calidad.',   'https://res.cloudinary.com/diq2bkb49/image/upload/v1776957779/maquillajeProfesional_h9vo1k.png', true, 90000,  'Estética'),
-(10, 'Limpieza Facial',          'Tratamiento facial profundo para eliminar impurezas y revitalizar.',    'https://res.cloudinary.com/diq2bkb49/image/upload/v1776957778/limpiezaFacial_fmvrnn.png', true, 70000,  'Estética')
+INSERT INTO servicios (id_servicio, nombre, descripcion, url_imagen, estado, precio, tipo, duracion_minutos) VALUES
+(1,  'Corte de Cabello Premium', 'Corte moderno con técnicas personalizadas según tu tipo de cabello.', 'https://res.cloudinary.com/diq2bkb49/image/upload/v1776957776/cortePremium_engl79.png', true, 45000,  'Corte',       45),
+(2,  'Tinte y Coloración',       'Coloración de alta calidad con marcas premium. Resultados duraderos.', 'https://res.cloudinary.com/diq2bkb49/image/upload/v1776957782/tinteColoracion_xlsf5v.png', true, 120000, 'Color',       120),
+(3,  'Tratamiento de Keratina',  'Alisado profundo que elimina el frizz y deja el cabello sedoso.',       'https://res.cloudinary.com/diq2bkb49/image/upload/v1776957777/keratina_bjqvof.png', true, 180000, 'Tratamiento', 150),
+(4,  'Barba y Afeitado',         'Servicio completo de perfilado de barba y afeitado clásico.',           'https://res.cloudinary.com/diq2bkb49/image/upload/v1776957775/barbaAfeitado_fcacso.png', true, 35000,  'Barbería',    30),
+(5,  'Peinado para Eventos',     'Peinados profesionales para bodas, graduaciones y eventos especiales.', 'https://res.cloudinary.com/diq2bkb49/image/upload/v1776957782/peinadoEventos_bk9cyr.png', true, 80000,  'Peinado',     90),
+(6,  'Mechas y Reflejos',        'Técnicas de mechas californianas, babylights y reflejos.',              'https://res.cloudinary.com/diq2bkb49/image/upload/v1776957780/mechasReflejos_p5hod7.png', true, 150000, 'Color',       120),
+(7,  'Tratamiento Capilar',      'Hidratación y nutrición profunda para cabello maltratado.',             'https://res.cloudinary.com/diq2bkb49/image/upload/v1776957783/tratamientoCapilar_mqkb13.png', true, 65000,  'Tratamiento', 60),
+(8,  'Cepillado Brasileño',      'Alisado progresivo que reduce el volumen y da brillo.',                 'https://res.cloudinary.com/diq2bkb49/image/upload/v1776957775/cepilladoBrasile%C3%B1o_ela99r.png', true, 160000, 'Tratamiento', 150),
+(9,  'Maquillaje Profesional',   'Maquillaje para ocasiones especiales con productos de alta calidad.',   'https://res.cloudinary.com/diq2bkb49/image/upload/v1776957779/maquillajeProfesional_h9vo1k.png', true, 90000,  'Estética',    60),
+(10, 'Limpieza Facial',          'Tratamiento facial profundo para eliminar impurezas y revitalizar.',    'https://res.cloudinary.com/diq2bkb49/image/upload/v1776957778/limpiezaFacial_fmvrnn.png', true, 70000,  'Estética',    45)
 ON CONFLICT (id_servicio) DO UPDATE SET
   nombre = EXCLUDED.nombre,
   descripcion = EXCLUDED.descripcion,
   url_imagen = EXCLUDED.url_imagen,
   estado = EXCLUDED.estado,
   precio = EXCLUDED.precio,
-  tipo = EXCLUDED.tipo;
+  tipo = EXCLUDED.tipo,
+  duracion_minutos = EXCLUDED.duracion_minutos;
 
 -- Ajustar secuencias SERIAL para futuros INSERT sin chocar IDs
 SELECT setval(pg_get_serial_sequence('usuarios', 'id_usuario'), (SELECT COALESCE(MAX(id_usuario), 1) FROM usuarios));

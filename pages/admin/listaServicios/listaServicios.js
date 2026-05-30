@@ -24,6 +24,8 @@ export function renderizarTabla() {
     const estadoTexto = servicio.status === true || servicio.status === "true" ? "Activo" : "Inactivo";
     const id = servicio.id ?? index + 1;
 
+    const duracion = servicio.duracionMinutos ?? 60;
+
     const fila = `
       <tr>
         <td>#ID-${id}</td>
@@ -31,6 +33,7 @@ export function renderizarTabla() {
         <td>
           <div class="text-truncate">${servicio.descripcion}</div>
         </td>
+        <td>${duracion} min</td>
         <td>
           <span class="badge-estado ${estadoClase}">${estadoTexto}</span>
         </td>
@@ -101,6 +104,7 @@ export function initListaServicios() {
       document.getElementById("nombre").value = servicio.nombre;
       document.getElementById("descripcion").value = servicio.descripcion;
       document.getElementById("precio").value = servicio.precio;
+      document.getElementById("duracionMinutos").value = servicio.duracionMinutos ?? 60;
       document.getElementById("editIndex").value = index;
       document.querySelector(".btn-enviar").textContent = "Guardar Cambios";
 
