@@ -40,15 +40,11 @@
         if (me) me.style.display = 'none';
     }
 
-    function obtenerUrlRedireccion(rol) {
+    function obtenerUrlRedireccion() {
         if (typeof urlApp === "function") {
-            return rol === "ADMIN"
-                ? urlApp("/pages/admin/panelDeControl/panelControl.html")
-                : urlApp("/index.html");
+            return urlApp("/index.html");
         }
-        return rol === "ADMIN"
-            ? "../../pages/admin/panelDeControl/panelControl.html"
-            : "../../index.html";
+        return "../../index.html";
     }
 
     function initLoginForm() {
@@ -128,7 +124,7 @@
                         if (typeof ReservaPendiente !== 'undefined' && ReservaPendiente.debeRetomar()) {
                             url = ReservaPendiente.urlPaginaReservas();
                         } else {
-                            url = obtenerUrlRedireccion(data.rol);
+                            url = obtenerUrlRedireccion();
                         }
                         if (window.parent && window.parent !== window) {
                             window.parent.location.href = url;

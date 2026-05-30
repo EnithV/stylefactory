@@ -16,7 +16,7 @@ function actualizarNavbar() {
         if (accesoBotones) accesoBotones.style.display = 'none';
         
         if (adminLink) {
-            adminLink.style.display = usuario.rol === 'admin' ? 'block' : 'none';
+            adminLink.style.display = (usuario.rol || '').toUpperCase() === 'ADMIN' ? 'block' : 'none';
         }
     } else {
         if (userInfo) userInfo.style.display = 'none';

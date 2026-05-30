@@ -2,6 +2,7 @@ body {
     padding: 0;
     margin: 0;
     background: #f8f9fa;
+    font-family: 'Montserrat', sans-serif;
 }
 
 #navbarAdmin-placeholder,
@@ -12,4 +13,5 @@ body {
 .content {
     min-height: 100vh;
     background: #f8f9fa;
+    font-family: 'Montserrat', sans-serif;
 }

@@ -1,7 +1,7 @@
 /**
  * Actualiza la interfaz del navbar según el estado de sesión del usuario.
  * Si hay un usuario logueado (almacenado en localStorage), muestra su nombre
- * y oculta los botones de acceso. Si el rol es "admin", muestra el enlace
+ * y oculta los botones de acceso. Si el rol es ADMIN, muestra el enlace
  * al panel de administración.
  */
 function actualizarNavbar() {
@@ -18,7 +18,7 @@ function actualizarNavbar() {
         if (accesoBotones) accesoBotones.style.display = 'none';
         
         if (adminLink) {
-            adminLink.style.display = usuario.rol === 'admin' ? 'block' : 'none';
+            adminLink.style.display = (usuario.rol || '').toUpperCase() === 'ADMIN' ? 'block' : 'none';
         }
     } else {
         if (userInfo) userInfo.style.display = 'none';
