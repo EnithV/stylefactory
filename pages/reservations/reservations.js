@@ -22,6 +22,9 @@ function actualizarNavbar() {
         if (accesoBotones) accesoBotones.style.display = 'block';
         if (adminLink) adminLink.style.display = 'none';
     }
+    if (typeof actualizarEnlacesNavbarSesion === 'function') {
+        actualizarEnlacesNavbarSesion();
+    }
 }
 
 /**

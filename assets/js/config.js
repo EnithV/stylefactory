@@ -98,11 +98,39 @@ function marcarEnlaceNavbarActivo() {
 }
 
 /**
+ * Muestra u oculta enlaces del navbar según la sesión (Mis reservas, Admin).
+ */
+function actualizarEnlacesNavbarSesion() {
+    var misReservas = document.getElementById('mis-reservas-link');
+    var adminLink = document.getElementById('admin-link');
+    var raw = localStorage.getItem('usuarioLogueado');
+
+    if (!raw) {
+        if (misReservas) misReservas.style.display = 'none';
+        if (adminLink) adminLink.style.display = 'none';
+        return;
+    }
+
+    try {
+        var usuario = JSON.parse(raw);
+        if (misReservas) misReservas.style.display = '';
+        if (adminLink) {
+            adminLink.style.display =
+                (usuario.rol || '').toUpperCase() === 'ADMIN' ? '' : 'none';
+        }
+    } catch (e) {
+        if (misReservas) misReservas.style.display = 'none';
+    }
+}
+
+/**
  * Ejecuta la lógica común tras inyectar el HTML del navbar.
  */
 function inicializarNavbarCargado() {
     if (typeof actualizarNavbar === 'function') {
         actualizarNavbar();
+    } else {
+        actualizarEnlacesNavbarSesion();
     }
     marcarEnlaceNavbarActivo();
     var btnCerrarSesion = document.getElementById('btnCerrarSesion');
