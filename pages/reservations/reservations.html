@@ -21,7 +21,7 @@
 
   <header id="header" class="sticky-top"></header>
 
-  <div id="aviso-reserva-retomada" class="alert alert-info text-center mx-auto my-3" style="display:none; max-width:720px;" role="status"></div>
+  <div id="aviso-reserva-retomada" class="aviso-reserva-retomada" style="display:none;" role="status"></div>
 
   <!-- PASO 1: SERVICIO SELECCIONADO -->
   <section class="seccion-reserva py-4" id="seccionServicio">
@@ -141,7 +141,7 @@
 <!-- Modal: sesión requerida para confirmar -->
 <div class="modal fade" id="modalSesionReserva" tabindex="-1" aria-labelledby="modalSesionReservaLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
+    <div class="modal-content modal-reserva-sesion">
       <div class="modal-header">
         <h5 class="modal-title" id="modalSesionReservaLabel">Cuenta necesaria</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -149,9 +149,9 @@
       <div class="modal-body">
         Para completar tu reserva necesitas una cuenta. Tu selección de servicio, estilista, fecha y hora se guardará mientras te registras o inicias sesión.
       </div>
-      <div class="modal-footer">
-        <a href="#" id="btnIrRegistroReserva" class="btn btn-outline-primary">Registrarse</a>
-        <a href="#" id="btnIrLoginReserva" class="btn btn-primary">Iniciar sesión</a>
+      <div class="modal-footer modal-reserva-sesion__footer">
+        <a href="#" id="btnIrRegistroReserva" class="btn-modal btn-modal-outline">Registrarse</a>
+        <a href="#" id="btnIrLoginReserva" class="btn-modal btn-modal-primary">Iniciar sesión</a>
       </div>
     </div>
   </div>
@@ -160,13 +160,13 @@
 <!-- Modal de confirmación de reserva -->
 <div class="modal fade" id="modalConfirmacionReserva" tabindex="-1" aria-labelledby="modalConfirmacionLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
+    <div class="modal-content modal-reserva-sesion">
       <div class="modal-header">
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body" id="mensajeConfirmacion"></div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Aceptar</button>
+      <div class="modal-footer modal-reserva-sesion__footer">
+        <button type="button" class="btn-modal btn-modal-primary" data-bs-dismiss="modal">Aceptar</button>
       </div>
     </div>
   </div>
