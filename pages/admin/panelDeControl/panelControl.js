@@ -10,12 +10,19 @@ import { initListaReservas } from "../listaReservas/listaReservas.js";
  * La ruta del fetch es relativa a la ubicación actual (pages/admin/panelDeControl/).
  */
 fetch('../../../components/navbarAdmin/navbar_Admin.html')
-    .then(res => res.text())
-    .then(html => {
+    .then(function (res) {
+        if (!res.ok) throw new Error('No se pudo cargar el panel (' + res.status + ')');
+        return res.text();
+    })
+    .then(function (html) {
         document.getElementById('navbarAdmin-placeholder').innerHTML = html;
         initSidebar();
     })
-    .catch(err => console.error('Error cargando el navbar admin:', err));
+    .catch(function (err) {
+        console.error('Error cargando el navbar admin:', err);
+        document.body.innerHTML =
+            '<p style="padding:2rem;font-family:sans-serif;">No se pudo cargar el panel de administración. Recarga la página o vuelve a iniciar sesión.</p>';
+    });
 
 /**
  * Inicializa la barra lateral de navegación del panel de administración.
@@ -68,8 +75,11 @@ function initSidebar() {
    */
   function loadPage(page) {
     fetch(page)
-      .then(res => res.text())
-      .then(html => {
+      .then(function (res) {
+        if (!res.ok) throw new Error('No se pudo cargar ' + page);
+        return res.text();
+      })
+      .then(function (html) {
         content.innerHTML = html;
 
         // Inicializa las métricas si la página cargada lo requiere

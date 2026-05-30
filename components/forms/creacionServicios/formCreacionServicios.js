@@ -1,4 +1,4 @@
-import { productos } from '/pages/catalogoServicios/catalogoServicios.js';
+import { productos } from '../../../pages/catalogoServicios/catalogoServicios.js';
 
 let listaDeServicios = JSON.parse(localStorage.getItem("Lista de Servicios")) || [];
 
