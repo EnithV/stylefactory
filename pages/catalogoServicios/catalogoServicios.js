@@ -84,41 +84,20 @@ function renderizarCatalogo() {
 
     const html = productosActivos.map(producto => {
         const precioFormateado = Number(producto.precio).toLocaleString('es-CO');
-        const duracion = producto.duracionMinutos ?? 60;
-        const tipo = producto.tipo || 'Servicio';
-        const tipoClase = tipo
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .toLowerCase()
-            .replace(/\s+/g, '-');
-
         return `
-            <article class="card-servicio">
-                <div class="card-imagen-wrap">
-                    <img src="${producto.imagen}" alt="${producto.nombre}" class="card-imagen" loading="lazy">
-                    <span class="card-tipo badge-tipo badge-tipo--${tipoClase}">${tipo}</span>
-                </div>
+            <div class="card-servicio">
+                <img src="${producto.imagen}" alt="${producto.nombre}" class="card-imagen">
                 <div class="card-contenido">
                     <h3 class="card-titulo">${producto.nombre}</h3>
                     <p class="card-descripcion">${producto.descripcion}</p>
-                    <div class="card-meta">
-                        <span class="card-duracion"><i class="fa-regular fa-clock"></i> ${duracion} min</span>
-                    </div>
-                    <div class="card-footer">
-                        <div class="card-precio">$${precioFormateado}</div>
-                        <button class="btn-reservar" data-id="${producto.id}">Reservar</button>
-                    </div>
+                    <div class="card-precio">$${precioFormateado}</div>
+                    <button class="btn-reservar" data-id="${producto.id}">RESERVAR</button>
                 </div>
-            </article>
+            </div>
         `;
     }).join('');
 
     container.innerHTML = html;
-
-    var countEl = document.getElementById('catalogo-count');
-    if (countEl) {
-        countEl.textContent = productosActivos.length + ' servicios disponibles';
-    }
 
     // Configura el botón de reservar para cada servicio
     document.querySelectorAll('.btn-reservar').forEach(boton => {
