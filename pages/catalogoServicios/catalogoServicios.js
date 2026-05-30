@@ -37,9 +37,19 @@ function cerrarSesion() {
 }
 
 /**
+ * Combina datos del catálogo por defecto con los de localStorage (p. ej. tipo, duración).
+ */
+function enriquecerProducto(producto) {
+    const base = productos.find(function (p) { return p.id === producto.id; }) || {};
+    return Object.assign({}, base, producto, {
+        tipo: producto.tipo || base.tipo || '',
+        duracionMinutos: producto.duracionMinutos ?? base.duracionMinutos ?? 60
+    });
+}
+
+/**
  * Inicializa la carga del navbar, footer y catálogo cuando el contenedor
  * de tarjetas está presente en el DOM.
- * Las rutas de fetch son relativas a la ubicación actual (pages/catalogoServicios/).
  */
 if (document.getElementById('cards-container')) {
     fetch('../../components/navbar/navbar.html')
@@ -70,7 +80,6 @@ let btnReservar;
 
 /**
  * Renderiza el catálogo de servicios en el contenedor con id 'cards-container'.
- * Filtra solo los servicios activos y genera las tarjetas dinámicamente.
  */
 function renderizarCatalogo() {
     const container = document.getElementById('cards-container');
@@ -80,36 +89,55 @@ function renderizarCatalogo() {
     }
 
     const lista = JSON.parse(localStorage.getItem("Lista de Servicios")) || productos;
-    const productosActivos = lista.filter(producto => producto.status === true || producto.status === "true");
+    const productosActivos = lista
+        .filter(producto => producto.status === true || producto.status === "true")
+        .map(enriquecerProducto);
 
     const html = productosActivos.map(producto => {
         const precioFormateado = Number(producto.precio).toLocaleString('es-CO');
+        const duracion = producto.duracionMinutos ?? 60;
+        const tipo = (producto.tipo || '').trim();
+        const tipoClase = tipo
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .replace(/\s+/g, '-');
+        const badgeTipo = tipo
+            ? `<span class="card-tipo badge-tipo badge-tipo--${tipoClase}">${tipo}</span>`
+            : '';
+
         return `
-            <div class="card-servicio">
-                <img src="${producto.imagen}" alt="${producto.nombre}" class="card-imagen">
+            <article class="card-servicio">
+                <div class="card-imagen-wrap">
+                    <img src="${producto.imagen}" alt="${producto.nombre}" class="card-imagen" loading="lazy">
+                    ${badgeTipo}
+                </div>
                 <div class="card-contenido">
                     <h3 class="card-titulo">${producto.nombre}</h3>
                     <p class="card-descripcion">${producto.descripcion}</p>
-                    <div class="card-precio">$${precioFormateado}</div>
-                    <button class="btn-reservar" data-id="${producto.id}">RESERVAR</button>
+                    <div class="card-meta">
+                        <span class="card-duracion"><i class="fa-regular fa-clock"></i> ${duracion} min</span>
+                    </div>
+                    <div class="card-footer">
+                        <div class="card-precio">$${precioFormateado}</div>
+                        <button class="btn-reservar" data-id="${producto.id}">Reservar</button>
+                    </div>
                 </div>
-            </div>
+            </article>
         `;
     }).join('');
 
     container.innerHTML = html;
 
-    // Configura el botón de reservar para cada servicio
     document.querySelectorAll('.btn-reservar').forEach(boton => {
         boton.addEventListener('click', function () {
             const id = parseInt(this.getAttribute('data-id'));
             const listaActual = JSON.parse(localStorage.getItem("Lista de Servicios")) || productos;
-            const productoSeleccionado = listaActual.find(p => p.id === id);
+            const productoSeleccionado = enriquecerProducto(
+                listaActual.find(p => p.id === id) || productos.find(p => p.id === id)
+            );
 
-            // Guarda el servicio seleccionado para usarlo en la página de reserva
             localStorage.setItem('servicioSeleccionado', JSON.stringify(productoSeleccionado));
-
-            // Redirige a la página de reservas (ruta relativa a la ubicación actual)
             window.location.href = '../reservations/reservations.html';
         });
     });
