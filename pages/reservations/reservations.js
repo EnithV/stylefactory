@@ -96,51 +96,31 @@ function renderizarReservas() {
 document.addEventListener('DOMContentLoaded', renderizarReservas);
 
 /**
- * Estilistas cargados desde el API (IDs reales de la base de datos).
+ * Estilistas del carrusel (UI fija). empleadoId debe coincidir con empleados.id en la BD.
  */
-let estilistas = [];
-
-const FOTOS_ESTILISTAS = [
-  "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336588/Sty1_wj2bmn.png",
-  "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336622/Sty2_z1upkm.png",
-  "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336764/Sty3_hk8sdy.png",
-  "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336831/Sty4_yhgjef.png",
-  "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336977/Sty5_wnafrw.png",
-  "https://res.cloudinary.com/diq2bkb49/image/upload/v1777337017/Sty6_vgztvb.png",
+const estilistas = [
+  { id: 1, empleadoId: 1, nombre: "Ana García", especialidad: "Colorimetría", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336588/Sty1_wj2bmn.png", disponibilidad: { "2026-05-30": ["09:00", "10:00", "14:00", "15:00"], "2026-05-31": ["09:00", "11:00", "16:00"], "2026-06-02": ["09:00", "10:00", "14:00", "15:00"], "2026-06-03": ["09:00", "11:00", "16:00"], "2026-06-05": ["10:00", "13:00", "17:00"], "2026-06-06": ["09:00", "10:00", "11:00"], "2026-06-09": ["14:00", "15:00", "16:00"] } },
+  { id: 2, empleadoId: 2, nombre: "Laura Martínez", especialidad: "Cortes y peinados", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336622/Sty2_z1upkm.png", disponibilidad: { "2026-05-30": ["08:00", "09:00", "11:00"], "2026-05-31": ["10:00", "12:00", "15:00"], "2026-06-02": ["08:00", "09:00", "11:00"], "2026-06-03": ["10:00", "12:00", "15:00"], "2026-06-05": ["09:00", "11:00", "14:00"], "2026-06-06": ["13:00", "15:00", "17:00"], "2026-06-09": ["09:00", "10:00", "12:00"] } },
+  { id: 3, empleadoId: 3, nombre: "Camila Rodríguez", especialidad: "Tratamientos capilares", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336764/Sty3_hk8sdy.png", disponibilidad: { "2026-05-30": ["10:00", "12:00", "16:00"], "2026-05-31": ["09:00", "13:00", "15:00"], "2026-06-02": ["10:00", "12:00", "16:00"], "2026-06-03": ["09:00", "13:00", "15:00"], "2026-06-05": ["11:00", "14:00", "18:00"], "2026-06-06": ["08:00", "09:00", "10:00"], "2026-06-09": ["13:00", "14:00", "15:00"] } },
+  { id: 4, empleadoId: 4, nombre: "Valentina López", especialidad: "Alisados y keratina", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336831/Sty4_yhgjef.png", disponibilidad: { "2026-05-30": ["09:00", "11:00", "13:00"], "2026-05-31": ["10:00", "12:00", "16:00"], "2026-06-02": ["09:00", "11:00", "13:00"], "2026-06-03": ["10:00", "12:00", "16:00"], "2026-06-05": ["08:00", "10:00", "12:00"], "2026-06-06": ["14:00", "16:00", "18:00"], "2026-06-09": ["09:00", "11:00", "13:00"] } },
+  { id: 5, empleadoId: 5, nombre: "Daniel Herrera", especialidad: "Corte caballero y barba", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336977/Sty5_wnafrw.png", disponibilidad: { "2026-05-30": ["09:00", "10:00", "11:00", "15:00"], "2026-05-31": ["10:00", "12:00", "14:00"], "2026-06-02": ["09:00", "10:00", "11:00", "15:00"], "2026-06-03": ["10:00", "12:00", "14:00"], "2026-06-05": ["09:00", "11:00", "13:00"], "2026-06-06": ["08:00", "09:00", "10:00"], "2026-06-09": ["16:00", "17:00", "18:00"] } },
+  { id: 6, empleadoId: 6, nombre: "Santiago Ruiz", especialidad: "Barbería clásica y perfilado de barba", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777337017/Sty6_vgztvb.png", disponibilidad: { "2026-05-30": ["08:00", "09:00", "12:00"], "2026-05-31": ["11:00", "13:00", "15:00"], "2026-06-02": ["08:00", "09:00", "12:00"], "2026-06-03": ["11:00", "13:00", "15:00"], "2026-06-05": ["10:00", "12:00", "14:00"], "2026-06-06": ["09:00", "11:00", "13:00"], "2026-06-09": ["14:00", "16:00", "18:00"] } },
 ];
 
-const PLANTILLAS_DISPONIBILIDAD = [
-  { "2026-05-30": ["09:00", "10:00", "14:00", "15:00"], "2026-05-31": ["09:00", "11:00", "16:00"], "2026-06-02": ["09:00", "10:00", "14:00", "15:00"], "2026-06-03": ["09:00", "11:00", "16:00"], "2026-06-05": ["10:00", "13:00", "17:00"], "2026-06-06": ["09:00", "10:00", "11:00"], "2026-06-09": ["14:00", "15:00", "16:00"] },
-  { "2026-05-30": ["08:00", "09:00", "11:00"], "2026-05-31": ["10:00", "12:00", "15:00"], "2026-06-02": ["08:00", "09:00", "11:00"], "2026-06-03": ["10:00", "12:00", "15:00"], "2026-06-05": ["09:00", "11:00", "14:00"], "2026-06-06": ["13:00", "15:00", "17:00"], "2026-06-09": ["09:00", "10:00", "12:00"] },
-  { "2026-05-30": ["10:00", "12:00", "16:00"], "2026-05-31": ["09:00", "13:00", "15:00"], "2026-06-02": ["10:00", "12:00", "16:00"], "2026-06-03": ["09:00", "13:00", "15:00"], "2026-06-05": ["11:00", "14:00", "18:00"], "2026-06-06": ["08:00", "09:00", "10:00"], "2026-06-09": ["13:00", "14:00", "15:00"] },
-  { "2026-05-30": ["09:00", "11:00", "13:00"], "2026-05-31": ["10:00", "12:00", "16:00"], "2026-06-02": ["09:00", "11:00", "13:00"], "2026-06-03": ["10:00", "12:00", "16:00"], "2026-06-05": ["08:00", "10:00", "12:00"], "2026-06-06": ["14:00", "16:00", "18:00"], "2026-06-09": ["09:00", "11:00", "13:00"] },
-  { "2026-05-30": ["09:00", "10:00", "11:00", "15:00"], "2026-05-31": ["10:00", "12:00", "14:00"], "2026-06-02": ["09:00", "10:00", "11:00", "15:00"], "2026-06-03": ["10:00", "12:00", "14:00"], "2026-06-05": ["09:00", "11:00", "13:00"], "2026-06-06": ["08:00", "09:00", "10:00"], "2026-06-09": ["16:00", "17:00", "18:00"] },
-  { "2026-05-30": ["08:00", "09:00", "12:00"], "2026-05-31": ["11:00", "13:00", "15:00"], "2026-06-02": ["08:00", "09:00", "12:00"], "2026-06-03": ["11:00", "13:00", "15:00"], "2026-06-05": ["10:00", "12:00", "14:00"], "2026-06-06": ["09:00", "11:00", "13:00"], "2026-06-09": ["14:00", "16:00", "18:00"] },
-];
+/**
+ * Renderiza el carrusel de estilistas agrupándolos en tarjetas de 4 columnas.
+ */
+const carouselInner = document.getElementById("carouselInner");
+const cantCards = 4;
 
-function esUrlImagenValida(url) {
-  return typeof url === "string" && (url.startsWith("http://") || url.startsWith("https://"));
-}
+for (let i = 0; i < estilistas.length; i += cantCards) {
+  const grupo = estilistas.slice(i, i + cantCards);
+  const item = document.createElement("div");
+  item.className = "carousel-item " + (i === 0 ? "active" : "");
 
-function asignarDisponibilidad(indice) {
-  return PLANTILLAS_DISPONIBILIDAD[indice % PLANTILLAS_DISPONIBILIDAD.length];
-}
-
-function renderizarCarouselEstilistas() {
-  const carouselInner = document.getElementById("carouselInner");
-  if (!carouselInner) return;
-
-  carouselInner.innerHTML = "";
-  const cantCards = 4;
-
-  for (let i = 0; i < estilistas.length; i += cantCards) {
-    const grupo = estilistas.slice(i, i + cantCards);
-    const item = document.createElement("div");
-    item.className = "carousel-item " + (i === 0 ? "active" : "");
-
-    let row = '<div class="row">';
-    grupo.forEach((est) => {
-      row += `
+  let row = '<div class="row">';
+  grupo.forEach((est) => {
+    row += `
       <div class="col-md-3">
         <div class="card card-estilista" id="card-estilista-${est.id}" onclick="seleccionarEstilista(${est.id})">
           <img src="${est.foto}" class="card-img-top" alt="${est.nombre}">
@@ -151,52 +131,10 @@ function renderizarCarouselEstilistas() {
         </div>
       </div>
     `;
-    });
-    row += "</div>";
-    item.innerHTML = row;
-    carouselInner.appendChild(item);
-  }
-}
-
-async function cargarEstilistasDesdeApi() {
-  const carouselInner = document.getElementById("carouselInner");
-  if (!carouselInner) return;
-
-  carouselInner.innerHTML = '<p class="text-center text-muted py-4">Cargando estilistas...</p>';
-
-  try {
-    const respuesta = await fetch(API_BASE + "/empleados/catalogo");
-    if (!respuesta.ok) {
-      throw new Error("No se pudieron cargar los estilistas");
-    }
-
-    const data = await respuesta.json();
-    estilistas = data.map(function (empleado, index) {
-      return {
-        id: empleado.id,
-        empleadoId: empleado.id,
-        nombre: empleado.nombre || "Estilista",
-        especialidad: empleado.especialidad || "Estilista profesional",
-        foto: esUrlImagenValida(empleado.url)
-          ? empleado.url
-          : FOTOS_ESTILISTAS[index % FOTOS_ESTILISTAS.length],
-        disponibilidad: asignarDisponibilidad(index),
-      };
-    });
-  } catch (error) {
-    console.error("Error cargando estilistas:", error);
-    carouselInner.innerHTML =
-      '<p class="text-center text-muted py-4">No se pudieron cargar los estilistas. Intente más tarde.</p>';
-    return;
-  }
-
-  if (estilistas.length === 0) {
-    carouselInner.innerHTML =
-      '<p class="text-center text-muted py-4">No hay estilistas registrados en el salón.</p>';
-    return;
-  }
-
-  renderizarCarouselEstilistas();
+  });
+  row += "</div>";
+  item.innerHTML = row;
+  carouselInner.appendChild(item);
 }
 
 /**
@@ -509,7 +447,5 @@ document.addEventListener("DOMContentLoaded", function () {
     btnLogin.href = ReservaPendiente.urlLoginConRetorno();
   }
 
-  cargarEstilistasDesdeApi().then(function () {
-    setTimeout(restaurarReservaPendiente, 200);
-  });
+  setTimeout(restaurarReservaPendiente, 200);
 });

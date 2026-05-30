@@ -81,66 +81,18 @@ const productos = [
 ];
 
 /**
- * Resuelve la imagen de un servicio del API usando el catálogo local como respaldo.
- */
-function resolverImagenServicio(servicioApi) {
-    if (servicioApi.urlImagen && servicioApi.urlImagen.startsWith('http')) {
-        return servicioApi.urlImagen;
-    }
-    const coincidencia = productos.find(function (p) {
-        return p.nombre.toLowerCase() === (servicioApi.nombre || '').toLowerCase();
-    });
-    return coincidencia ? coincidencia.imagen : productos[0].imagen;
-}
-
-/**
- * Obtiene servicios activos desde el API o usa el catálogo local como respaldo.
- */
-async function obtenerServiciosCatalogo() {
-    try {
-        const respuesta = await fetch(API_BASE + '/servicios');
-        if (!respuesta.ok) {
-            throw new Error('API no disponible');
-        }
-        const data = await respuesta.json();
-        return data
-            .filter(function (servicio) { return servicio.estado; })
-            .map(function (servicio) {
-                return {
-                    id: servicio.id,
-                    nombre: servicio.nombre,
-                    descripcion: servicio.descripcion,
-                    precio: servicio.precio,
-                    imagen: resolverImagenServicio(servicio),
-                    status: true
-                };
-            });
-    } catch (error) {
-        console.warn('Usando catálogo local de servicios:', error);
-        return JSON.parse(localStorage.getItem('Lista de Servicios')) || productos;
-    }
-}
-
-/**
  * Renderiza el catálogo de servicios en el contenedor con id 'cards-container'.
  * Filtra solo los servicios activos y genera las tarjetas dinámicamente.
  */
-async function renderizarCatalogo() {
+function renderizarCatalogo() {
     const container = document.getElementById('cards-container');
     if (!container) {
         console.error("No se encontró el contenedor 'cards-container'");
         return;
     }
 
-    container.innerHTML = '<p class="text-center text-muted">Cargando servicios...</p>';
-
-    const lista = await obtenerServiciosCatalogo();
+    const lista = JSON.parse(localStorage.getItem("Lista de Servicios")) || productos;
     const productosActivos = lista.filter(producto => producto.status === true || producto.status === "true");
-
-    if (productosActivos.length === 0) {
-        container.innerHTML = '<p class="text-center text-muted">No hay servicios disponibles.</p>';
-        return;
-    }
 
     const html = productosActivos.map(producto => {
         const precioFormateado = Number(producto.precio).toLocaleString('es-CO');
@@ -163,7 +115,8 @@ async function renderizarCatalogo() {
     document.querySelectorAll('.btn-reservar').forEach(boton => {
         boton.addEventListener('click', function () {
             const id = parseInt(this.getAttribute('data-id'));
-            const productoSeleccionado = productosActivos.find(p => p.id === id);
+            const listaActual = JSON.parse(localStorage.getItem("Lista de Servicios")) || productos;
+            const productoSeleccionado = listaActual.find(p => p.id === id);
 
             // Guarda el servicio seleccionado para usarlo en la página de reserva
             localStorage.setItem('servicioSeleccionado', JSON.stringify(productoSeleccionado));
