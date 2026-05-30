@@ -54,25 +54,61 @@ function saludoNavbar(nombre) {
 }
 
 /**
+ * Normaliza el identificador de una página (sin .html, minúsculas).
+ */
+function normalizarSlugPagina(valor) {
+    var slug = (valor || '').split('?')[0].split('#')[0].replace(/\/$/, '');
+    slug = slug.split('/').filter(Boolean).pop() || 'index';
+    if (slug.toLowerCase() === 'stylefactory') {
+        slug = 'index';
+    }
+    return slug.replace(/\.html$/i, '').toLowerCase();
+}
+
+/**
+ * Indica si un href del navbar corresponde a la URL actual.
+ */
+function enlaceNavbarEsPaginaActual(href) {
+    if (!href) return false;
+
+    var slugActual = normalizarSlugPagina(window.location.pathname);
+    var slugEnlace = normalizarSlugPagina(href);
+    if (slugActual === slugEnlace) {
+        return true;
+    }
+
+    var pathActual = (window.location.pathname || '').toLowerCase().replace(/\/$/, '');
+    var pathEnlace = href.split('?')[0].split('#')[0].toLowerCase().replace(/\.html$/, '');
+    return pathActual === pathEnlace || pathActual.indexOf(pathEnlace) !== -1;
+}
+
+/**
  * Resalta el enlace del navbar que corresponde a la página actual.
  */
 function marcarEnlaceNavbarActivo() {
-    var enlaces = document.querySelectorAll('.navbar-nav .nav-link');
-    var rutaActual = window.location.pathname.split('/').pop() || '';
-    if (rutaActual === '' || rutaActual === '/') {
-        rutaActual = 'index.html';
-    }
-
-    enlaces.forEach(function (enlace) {
-        var href = enlace.getAttribute('href');
-        if (!href) return;
-        var rutaEnlace = href.split('/').pop().split('?')[0];
-        if (rutaEnlace === rutaActual) {
-            enlace.classList.add('active');
+    document.querySelectorAll('.navbar-nav .nav-link').forEach(function (enlace) {
+        var esActivo = enlaceNavbarEsPaginaActual(enlace.getAttribute('href'));
+        enlace.classList.toggle('active', esActivo);
+        if (esActivo) {
+            enlace.setAttribute('aria-current', 'page');
         } else {
-            enlace.classList.remove('active');
+            enlace.removeAttribute('aria-current');
         }
     });
+}
+
+/**
+ * Ejecuta la lógica común tras inyectar el HTML del navbar.
+ */
+function inicializarNavbarCargado() {
+    if (typeof actualizarNavbar === 'function') {
+        actualizarNavbar();
+    }
+    marcarEnlaceNavbarActivo();
+    var btnCerrarSesion = document.getElementById('btnCerrarSesion');
+    if (btnCerrarSesion && typeof cerrarSesion === 'function') {
+        btnCerrarSesion.addEventListener('click', cerrarSesion);
+    }
 }
 
 /**
