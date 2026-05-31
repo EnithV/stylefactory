@@ -33,9 +33,9 @@ function actualizarNavbar() {
  * Ruta relativa desde la ubicación actual (pages/registro/).
  */
 function cerrarSesion() {
-    localStorage.removeItem('usuarioLogueado');
+    limpiarSesionLocal();
     actualizarNavbar();
-    window.location.href = '../../index.html';
+    window.location.href = typeof urlApp === 'function' ? urlApp('/index.html') : '../../index.html';
 }
 
 /**

@@ -122,9 +122,10 @@
     function mostrarExitoRegistro() {
         var exito = document.getElementById('mensajeExito');
         if (exito) {
-            exito.textContent =
-                '¡Cuenta registrada con éxito! Redirigiendo al inicio de sesión...';
-            exito.style.display = 'block';
+            exito.innerHTML =
+                '<span class="mensaje-exito-icon" aria-hidden="true"></span>' +
+                '<span class="mensaje-exito-texto">¡Cuenta registrada con <strong>éxito</strong>! Redirigiendo al inicio de sesión...</span>';
+            exito.style.display = 'flex';
             exito.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     }

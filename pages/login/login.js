@@ -36,9 +36,9 @@ function actualizarNavbar() {
  * La ruta es relativa a la ubicación actual (pages/login/).
  */
 function cerrarSesion() {
-    localStorage.removeItem('usuarioLogueado');
+    limpiarSesionLocal();
     actualizarNavbar();
-    window.location.href = '../../index.html';
+    window.location.href = typeof urlApp === 'function' ? urlApp('/index.html') : '../../index.html';
 }
 
 /**
@@ -86,8 +86,9 @@ fetch('../../components/footer/footer.html')
         avisoReserva.id = 'aviso-retomar-reserva';
         avisoReserva.className = 'aviso-registro-exito';
         avisoReserva.setAttribute('role', 'status');
-        avisoReserva.textContent =
-            'Inicia sesión para continuar con tu reserva. Tu selección sigue guardada.';
+        avisoReserva.innerHTML =
+            '<span class="aviso-registro-exito-icon" aria-hidden="true"></span>' +
+            '<span class="aviso-registro-exito-texto">Inicia sesión para continuar con tu reserva. Tu selección sigue <strong>guardada</strong>.</span>';
         columnaFormulario.insertBefore(avisoReserva, columnaFormulario.firstChild);
     }
 
@@ -98,7 +99,8 @@ fetch('../../components/footer/footer.html')
     aviso.id = 'aviso-registro-exito';
     aviso.className = 'aviso-registro-exito';
     aviso.setAttribute('role', 'status');
-    aviso.textContent =
-        '¡Cuenta registrada! Ya puede iniciar sesión con su correo y contraseña.';
+    aviso.innerHTML =
+        '<span class="aviso-registro-exito-icon" aria-hidden="true"></span>' +
+        '<span class="aviso-registro-exito-texto">¡Cuenta <strong>registrada</strong>! Ya puede iniciar sesión con su correo y contraseña.</span>';
     columnaFormulario.insertBefore(aviso, columnaFormulario.firstChild);
 })();

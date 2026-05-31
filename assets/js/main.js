@@ -39,9 +39,9 @@ function actualizarNavbar() {
  * Redirige a la página de inicio.
  */
 function cerrarSesion() {
-    localStorage.removeItem('usuarioLogueado');
+    limpiarSesionLocal();
     actualizarNavbar();
-    window.location.href = 'index.html';
+    window.location.href = typeof urlApp === 'function' ? urlApp('/index.html') : 'index.html';
 }
 
 /**

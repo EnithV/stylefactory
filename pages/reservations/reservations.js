@@ -31,9 +31,9 @@ function actualizarNavbar() {
  * Cierra la sesión del usuario y redirige al inicio.
  */
 function cerrarSesion() {
-    localStorage.removeItem('usuarioLogueado');
+    limpiarSesionLocal();
     actualizarNavbar();
-    window.location.href = '../../index.html';
+    window.location.href = typeof urlApp === 'function' ? urlApp('/index.html') : '../../index.html';
 }
 
 /**
@@ -101,59 +101,182 @@ function renderizarReservas() {
   `;
 }
 
-document.addEventListener('DOMContentLoaded', renderizarReservas);
+document.addEventListener("DOMContentLoaded", function () {
+  renderizarReservas();
 
-/**
- * Estilistas del carrusel (UI fija). empleadoId debe coincidir con empleados.id en la BD.
- */
-const estilistas = [
-  { id: 1, empleadoId: 1, nombre: "Ana García", especialidad: "Colorimetría", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336588/Sty1_wj2bmn.png", disponibilidad: { "2026-05-30": ["09:00", "10:00", "14:00", "15:00"], "2026-05-31": ["09:00", "11:00", "16:00"], "2026-06-02": ["09:00", "10:00", "14:00", "15:00"], "2026-06-03": ["09:00", "11:00", "16:00"], "2026-06-05": ["10:00", "13:00", "17:00"], "2026-06-06": ["09:00", "10:00", "11:00"], "2026-06-09": ["14:00", "15:00", "16:00"] } },
-  { id: 2, empleadoId: 2, nombre: "Laura Martínez", especialidad: "Cortes y peinados", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336622/Sty2_z1upkm.png", disponibilidad: { "2026-05-30": ["08:00", "09:00", "11:00"], "2026-05-31": ["10:00", "12:00", "15:00"], "2026-06-02": ["08:00", "09:00", "11:00"], "2026-06-03": ["10:00", "12:00", "15:00"], "2026-06-05": ["09:00", "11:00", "14:00"], "2026-06-06": ["13:00", "15:00", "17:00"], "2026-06-09": ["09:00", "10:00", "12:00"] } },
-  { id: 3, empleadoId: 3, nombre: "Camila Rodríguez", especialidad: "Tratamientos capilares", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336764/Sty3_hk8sdy.png", disponibilidad: { "2026-05-30": ["10:00", "12:00", "16:00"], "2026-05-31": ["09:00", "13:00", "15:00"], "2026-06-02": ["10:00", "12:00", "16:00"], "2026-06-03": ["09:00", "13:00", "15:00"], "2026-06-05": ["11:00", "14:00", "18:00"], "2026-06-06": ["08:00", "09:00", "10:00"], "2026-06-09": ["13:00", "14:00", "15:00"] } },
-  { id: 4, empleadoId: 4, nombre: "Valentina López", especialidad: "Alisados y keratina", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336831/Sty4_yhgjef.png", disponibilidad: { "2026-05-30": ["09:00", "11:00", "13:00"], "2026-05-31": ["10:00", "12:00", "16:00"], "2026-06-02": ["09:00", "11:00", "13:00"], "2026-06-03": ["10:00", "12:00", "16:00"], "2026-06-05": ["08:00", "10:00", "12:00"], "2026-06-06": ["14:00", "16:00", "18:00"], "2026-06-09": ["09:00", "11:00", "13:00"] } },
-  { id: 5, empleadoId: 5, nombre: "Daniel Herrera", especialidad: "Corte caballero y barba", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336977/Sty5_wnafrw.png", disponibilidad: { "2026-05-30": ["09:00", "10:00", "11:00", "15:00"], "2026-05-31": ["10:00", "12:00", "14:00"], "2026-06-02": ["09:00", "10:00", "11:00", "15:00"], "2026-06-03": ["10:00", "12:00", "14:00"], "2026-06-05": ["09:00", "11:00", "13:00"], "2026-06-06": ["08:00", "09:00", "10:00"], "2026-06-09": ["16:00", "17:00", "18:00"] } },
-  { id: 6, empleadoId: 6, nombre: "Santiago Ruiz", especialidad: "Barbería clásica y perfilado de barba", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777337017/Sty6_vgztvb.png", disponibilidad: { "2026-05-30": ["08:00", "09:00", "12:00"], "2026-05-31": ["11:00", "13:00", "15:00"], "2026-06-02": ["08:00", "09:00", "12:00"], "2026-06-03": ["11:00", "13:00", "15:00"], "2026-06-05": ["10:00", "12:00", "14:00"], "2026-06-06": ["09:00", "11:00", "13:00"], "2026-06-09": ["14:00", "16:00", "18:00"] } },
+  var btnRegistro = document.getElementById("btnIrRegistroReserva");
+  var btnLogin = document.getElementById("btnIrLoginReserva");
+  if (btnRegistro && typeof ReservaPendiente !== "undefined") {
+    btnRegistro.href = ReservaPendiente.urlRegistroConRetorno();
+  }
+  if (btnLogin && typeof ReservaPendiente !== "undefined") {
+    btnLogin.href = ReservaPendiente.urlLoginConRetorno();
+  }
+
+  cargarDatosReserva().then(function () {
+    setTimeout(restaurarReservaPendiente, 100);
+  });
+});
+
+/** Estilistas activos (API) y horarios agrupados por empleado/fecha. */
+let estilistas = [];
+let horariosPorEmpleado = {};
+
+/** Respaldo local si el API no responde (mismos IDs y fotos que el seed de Supabase). */
+const ESTILISTAS_FALLBACK = [
+  { id: 1, empleadoId: 1, nombre: "Ana García", especialidad: "Colorimetría", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336588/Sty1_wj2bmn.png" },
+  { id: 2, empleadoId: 2, nombre: "Laura Martínez", especialidad: "Cortes y peinados", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336622/Sty2_z1upkm.png" },
+  { id: 3, empleadoId: 3, nombre: "Camila Rodríguez", especialidad: "Tratamientos capilares", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336764/Sty3_hk8sdy.png" },
+  { id: 4, empleadoId: 4, nombre: "Valentina López", especialidad: "Alisados y keratina", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336831/Sty4_yhgjef.png" },
+  { id: 5, empleadoId: 5, nombre: "Daniel Herrera", especialidad: "Corte caballero y barba", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336977/Sty5_wnafrw.png" },
+  { id: 6, empleadoId: 6, nombre: "Santiago Ruiz", especialidad: "Barbería clásica y perfilado de barba", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777337017/Sty6_vgztvb.png" },
 ];
 
-/**
- * Renderiza el carrusel de estilistas agrupándolos en tarjetas de 4 columnas.
- */
-const carouselInner = document.getElementById("carouselInner");
-const cantCards = 4;
+const IMAGEN_ESTILISTA_DEFAULT =
+  "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336588/Sty1_wj2bmn.png";
 
-for (let i = 0; i < estilistas.length; i += cantCards) {
-  const grupo = estilistas.slice(i, i + cantCards);
-  const item = document.createElement("div");
-  item.className = "carousel-item " + (i === 0 ? "active" : "");
+/** Horario de atención en salón (reglas de negocio del calendario). */
+const HORA_APERTURA_ATENCION = 9;
+const HORA_CIERRE_ATENCION = 20;
+const HORA_ULTIMO_INICIO_CITA = 18;
 
-  let row = '<div class="row">';
-  grupo.forEach((est) => {
-    row += `
-      <div class="col-md-3">
-        <div class="card card-estilista" id="card-estilista-${est.id}" onclick="seleccionarEstilista(${est.id})">
-          <img src="${est.foto}" class="card-img-top" alt="${est.nombre}">
-          <div class="card-body text-center">
-            <h5>${est.nombre}</h5>
-            <p class="text-purple">${est.especialidad}</p>
-          </div>
-        </div>
-      </div>
-    `;
+function normalizarEstilistaDesdeApi(dto) {
+  return {
+    id: dto.id,
+    empleadoId: dto.id,
+    nombre: dto.nombre || "Estilista",
+    especialidad: dto.especialidad || "",
+    foto: dto.url || IMAGEN_ESTILISTA_DEFAULT,
+  };
+}
+
+function agruparHorariosPorEmpleado(listaHorarios) {
+  var mapa = {};
+  if (!Array.isArray(listaHorarios)) return mapa;
+
+  listaHorarios.forEach(function (h) {
+    var empleadoId = h.empleadoId;
+    var fechaHora = h.fechaHora;
+    if (!empleadoId || !fechaHora) return;
+
+    var partes = String(fechaHora).split("T");
+    if (partes.length < 2) return;
+
+    var fecha = partes[0];
+    var hora = partes[1].substring(0, 5);
+
+    if (!mapa[empleadoId]) mapa[empleadoId] = {};
+    if (!mapa[empleadoId][fecha]) mapa[empleadoId][fecha] = [];
+    if (mapa[empleadoId][fecha].indexOf(hora) === -1) {
+      mapa[empleadoId][fecha].push(hora);
+    }
   });
-  row += "</div>";
-  item.innerHTML = row;
-  carouselInner.appendChild(item);
+
+  Object.keys(mapa).forEach(function (empId) {
+    Object.keys(mapa[empId]).forEach(function (fecha) {
+      mapa[empId][fecha].sort();
+    });
+  });
+
+  return mapa;
+}
+
+function generarSlotsBaseDia() {
+  var slots = [];
+  for (var h = HORA_APERTURA_ATENCION; h <= HORA_ULTIMO_INICIO_CITA; h++) {
+    slots.push(String(h).padStart(2, "0") + ":00");
+  }
+  return slots;
+}
+
+function mostrarEstadoEstilistas(mensaje, esError) {
+  var el = document.getElementById("estilistasEstado");
+  if (!el) return;
+  el.textContent = mensaje;
+  el.style.display = mensaje ? "block" : "none";
+  if (esError) {
+    el.classList.add("text-danger");
+  } else {
+    el.classList.remove("text-danger");
+  }
+}
+
+function renderCarouselEstilistas() {
+  var carouselInner = document.getElementById("carouselInner");
+  if (!carouselInner) return;
+
+  carouselInner.innerHTML = "";
+
+  if (!estilistas.length) {
+    mostrarEstadoEstilistas("No hay estilistas disponibles en este momento.", true);
+    return;
+  }
+
+  mostrarEstadoEstilistas("", false);
+
+  var cantCards = 4;
+  for (var i = 0; i < estilistas.length; i += cantCards) {
+    var grupo = estilistas.slice(i, i + cantCards);
+    var item = document.createElement("div");
+    item.className = "carousel-item " + (i === 0 ? "active" : "");
+
+    var row = '<div class="row">';
+    grupo.forEach(function (est) {
+      row +=
+        '<div class="col-md-3">' +
+        '<div class="card card-estilista" id="card-estilista-' + est.id + '" onclick="seleccionarEstilista(' + est.id + ')">' +
+        '<img src="' + est.foto + '" class="card-img-top" alt="' + est.nombre + '">' +
+        '<div class="card-body text-center">' +
+        "<h5>" + est.nombre + "</h5>" +
+        '<p class="text-purple">' + est.especialidad + "</p>" +
+        "</div></div></div>";
+    });
+    row += "</div>";
+    item.innerHTML = row;
+    carouselInner.appendChild(item);
+  }
+}
+
+async function cargarDatosReserva() {
+  mostrarEstadoEstilistas("Cargando estilistas...", false);
+  var usoFallback = false;
+
+  try {
+    var catalogo = await fetchApiPublic("/empleados/catalogo");
+    estilistas = catalogo
+      .filter(function (e) {
+        return e.estado !== false;
+      })
+      .map(normalizarEstilistaDesdeApi);
+
+    try {
+      var horarios = await fetchApiPublic("/horarios");
+      horariosPorEmpleado = agruparHorariosPorEmpleado(horarios);
+    } catch (errHorarios) {
+      console.warn("Horarios no disponibles; se usan franjas estándar del salón.", errHorarios);
+      horariosPorEmpleado = {};
+    }
+  } catch (err) {
+    console.error("Error cargando catálogo de estilistas:", err);
+    estilistas = ESTILISTAS_FALLBACK.slice();
+    horariosPorEmpleado = {};
+    usoFallback = true;
+  }
+
+  renderCarouselEstilistas();
+
+  if (usoFallback) {
+    mostrarEstadoEstilistas(
+      "No se pudo conectar con el servidor. Mostrando estilistas en modo local.",
+      true
+    );
+  }
 }
 
 /**
  * Estado global de la selección de reserva (calendario inicia en mes actual, Colombia).
  */
 const ZONA_COLOMBIA = "America/Bogota";
-/** Horario de atención en salón: 9:00 a.m. – 8:00 p.m. */
-const HORA_APERTURA_ATENCION = 9;
-const HORA_CIERRE_ATENCION = 20;
-/** Última hora de INICIO de cita agendable (6 p.m.), cualquier día. Después quedan 2 h hasta el cierre. */
-const HORA_ULTIMO_INICIO_CITA = 18;
 
 const partesColombiaInicial = obtenerPartesFechaColombia();
 const estado = {
@@ -265,7 +388,17 @@ function filtrarHorasPorReglasNegocio(fechaStr, horas) {
 
 function obtenerHorasReservables(fechaStr) {
   if (!estado.estilista || !fechaReservable(fechaStr)) return [];
-  const horas = estado.estilista.disponibilidad[fechaStr] ?? [];
+
+  var empId = estado.estilista.empleadoId;
+  var horas = [];
+  var porEmpleado = horariosPorEmpleado[empId];
+
+  if (porEmpleado && porEmpleado[fechaStr] && porEmpleado[fechaStr].length) {
+    horas = porEmpleado[fechaStr].slice();
+  } else {
+    horas = generarSlotsBaseDia();
+  }
+
   return filtrarHorasPorReglasNegocio(fechaStr, horas);
 }
 
@@ -438,6 +571,7 @@ window.estadoReserva = estado;
  */
 function restaurarReservaPendiente() {
   if (typeof ReservaPendiente === "undefined") return;
+  if (!estilistas.length) return;
 
   var params = new URLSearchParams(window.location.search);
   if (params.get("retomar") !== "1" && !ReservaPendiente.debeRetomar()) return;
@@ -455,7 +589,10 @@ function restaurarReservaPendiente() {
 
   var estilista =
     estilistas.find(function (e) {
-      return e.id === pendiente.estilista.id;
+      return (
+        e.empleadoId === pendiente.estilista.empleadoId ||
+        e.id === pendiente.estilista.id
+      );
     }) || pendiente.estilista;
 
   document.getElementById("seccionCalendario").style.display = "block";
@@ -479,16 +616,3 @@ function restaurarReservaPendiente() {
 
   document.getElementById("seccionCalendario").scrollIntoView({ behavior: "smooth" });
 }
-
-document.addEventListener("DOMContentLoaded", function () {
-  var btnRegistro = document.getElementById("btnIrRegistroReserva");
-  var btnLogin = document.getElementById("btnIrLoginReserva");
-  if (btnRegistro) {
-    btnRegistro.href = ReservaPendiente.urlRegistroConRetorno();
-  }
-  if (btnLogin) {
-    btnLogin.href = ReservaPendiente.urlLoginConRetorno();
-  }
-
-  setTimeout(restaurarReservaPendiente, 200);
-});

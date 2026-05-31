@@ -63,6 +63,24 @@ async function fetchJson(url, options) {
     return respuesta.json();
 }
 
+export async function listarCatalogoEmpleados() {
+    const data = await fetchJson(API_URL + "/empleados/catalogo");
+    return data.map(function (dto) {
+        return {
+            id: dto.id,
+            empleadoId: dto.id,
+            nombre: dto.nombre || "Estilista",
+            especialidad: dto.especialidad || "",
+            foto: dto.url || IMAGEN_SERVICIO_DEFAULT,
+            estado: dto.estado,
+        };
+    });
+}
+
+export async function listarHorarios() {
+    return fetchJson(API_URL + "/horarios");
+}
+
 export async function listarServicios() {
     const data = await fetchJson(API_URL + "/servicios");
     return data.map(normalizarServicioDesdeApi);

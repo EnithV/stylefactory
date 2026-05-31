@@ -38,8 +38,7 @@ function actualizarNavbar() {
 }
 
 function cerrarSesion() {
-    localStorage.removeItem('usuarioLogueado');
-    localStorage.removeItem('token');
+    limpiarSesionLocal();
     actualizarNavbar();
     window.location.href = typeof urlApp === 'function' ? urlApp('/index.html') : '../../index.html';
 }

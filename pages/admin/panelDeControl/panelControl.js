@@ -76,8 +76,7 @@
 
                 var btnSalirConfirmado = document.getElementById('btnSalirConfirmado');
                 btnSalirConfirmado.addEventListener('click', function () {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('usuarioLogueado');
+                    limpiarSesionLocal();
                     var destino = typeof urlApp === 'function'
                         ? urlApp('/index.html')
                         : '../../../index.html';

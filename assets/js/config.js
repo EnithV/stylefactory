@@ -143,6 +143,27 @@ function inicializarNavbarCargado() {
 }
 
 /**
+ * GET público al API (sin JWT): catálogo de empleados, horarios, servicios.
+ */
+async function fetchApiPublic(ruta) {
+    var respuesta = await fetch(API_BASE + ruta, {
+        headers: { Accept: 'application/json' },
+    });
+    if (!respuesta.ok) {
+        throw new Error('Error en la solicitud (' + respuesta.status + ')');
+    }
+    return respuesta.json();
+}
+
+/**
+ * Elimina token y datos de usuario del almacenamiento local (cierre de sesión).
+ */
+function limpiarSesionLocal() {
+    localStorage.removeItem('usuarioLogueado');
+    localStorage.removeItem('token');
+}
+
+/**
  * Mensaje claro cuando fetch falla por red o CORS (p. ej. "NetworkError", "Failed to fetch").
  */
 function mensajeErrorConexion(error) {

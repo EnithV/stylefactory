@@ -25,8 +25,7 @@ function actualizarNavbar() {
 }
 
 function cerrarSesion() {
-    localStorage.removeItem('usuarioLogueado');
-    localStorage.removeItem('token');
+    limpiarSesionLocal();
     actualizarNavbar();
     window.location.href =
         typeof urlApp === 'function' ? urlApp('/index.html') : '../../index.html';
@@ -110,8 +109,7 @@ async function cargarMisReservas() {
         });
 
         if (respuesta.status === 401) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('usuarioLogueado');
+            limpiarSesionLocal();
             requiereSesion();
             return;
         }
