@@ -188,12 +188,23 @@ function actualizarEnlacesNavbarSesion() {
 /**
  * Ejecuta la lógica común tras inyectar el HTML del navbar.
  */
+function configurarEnlacesPerfilNavbar() {
+    var perfil = urlApp('/pages/perfilUsuario/perfilUsuario.html');
+    var perfilReservas = perfil + '#reservas';
+    var linkPerfil = document.getElementById('userNameLink');
+    var linkReservas = document.querySelector('#mis-reservas-link a');
+
+    if (linkPerfil) linkPerfil.href = perfil;
+    if (linkReservas) linkReservas.href = perfilReservas;
+}
+
 function inicializarNavbarCargado() {
     if (typeof actualizarNavbar === 'function') {
         actualizarNavbar();
     } else {
         actualizarEnlacesNavbarSesion();
     }
+    configurarEnlacesPerfilNavbar();
     if (typeof aplicarRutasImagenes === 'function') {
         aplicarRutasImagenes(document.getElementById('header'));
     }

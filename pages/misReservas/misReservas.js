@@ -202,4 +202,10 @@ fetch('../../components/footer/footer.html')
         console.error('Error cargando el footer:', err);
     });
 
-document.addEventListener('DOMContentLoaded', cargarMisReservas);
+document.addEventListener('DOMContentLoaded', function () {
+    var destino =
+        typeof urlApp === 'function'
+            ? urlApp('/pages/perfilUsuario/perfilUsuario.html#reservas')
+            : '../perfilUsuario/perfilUsuario.html#reservas';
+    window.location.replace(destino);
+});

@@ -116,6 +116,12 @@
                         mod.initListaReservas();
                     });
                 }
+
+                if (page.indexOf('empleados') !== -1) {
+                    return import('../empleados/empleados.js').then(function (mod) {
+                        mod.initEmpleados();
+                    });
+                }
             })
             .catch(function (err) {
                 console.error('Error cargando sección del panel:', err);

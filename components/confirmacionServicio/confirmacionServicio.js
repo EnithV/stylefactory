@@ -201,8 +201,8 @@ async function confirmarReserva() {
             .removeEventListener("hidden.bs.modal", handler);
           window.location.href =
             typeof urlApp === "function"
-              ? urlApp("/pages/aboutUs/aboutUs.html")
-              : "../aboutUs/aboutUs.html";
+              ? urlApp("/pages/perfilUsuario/perfilUsuario.html#reservas")
+              : "../perfilUsuario/perfilUsuario.html#reservas";
         },
         { once: true }
       );
