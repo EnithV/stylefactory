@@ -49,6 +49,40 @@ body {
     border-radius: 12px;
     border: 3px solid var(--color-secondary);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    z-index: 1;
+}
+
+.map-fallback-msg {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding: 24px;
+    text-align: center;
+    font-family: var(--font-family-general);
+    color: #444;
+    background: #f8f7f7;
+    border-radius: 12px;
+}
+
+.map-popup img {
+    display: block;
+    width: 100%;
+    max-height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.map-popup strong {
+    color: var(--color-primary);
+    font-family: var(--font-family-general);
+}
+
+.map-popup-dir {
+    font-size: 13px;
+    color: #333;
 }
 
 /* Lista de sedes */
@@ -154,11 +188,7 @@ body {
         padding-right: 0;
     }
 
-    .gm-style .gm-style-iw-c img {
-        display: none !important;
-    }
-
-    .gm-style .gm-style-iw-c div[style*="height:130px"] {
-        display: none !important;
+    .map-popup img {
+        display: none;
     }
 }

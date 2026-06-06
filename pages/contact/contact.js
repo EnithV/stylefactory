@@ -68,10 +68,18 @@ fetch('../../components/maps/maps.html')
         link.href = '../../components/maps/maps.css';
         document.head.appendChild(link);
 
-        // Inicializa el mapa después de insertar el HTML
-        setTimeout(() => {
-            inicializacionMap();
-        }, 100);
+        function esperarMapaListo(intentos) {
+            if (typeof inicializacionMap === 'function' && typeof L !== 'undefined' && document.getElementById('map')) {
+                inicializacionMap();
+                return;
+            }
+            if ((intentos || 0) < 40) {
+                setTimeout(function () { esperarMapaListo((intentos || 0) + 1); }, 100);
+            } else if (typeof mostrarErrorMapa === 'function') {
+                mostrarErrorMapa('No se pudo inicializar el mapa. Recarga la página o revisa tu conexión.');
+            }
+        }
+        esperarMapaListo(0);
     })
     .catch(err => console.error('Error cargando el mapa:', err));
 

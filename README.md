@@ -29,7 +29,7 @@ Está construido con **HTML, CSS y JavaScript** vanilla (sin React ni Vue). Los 
 | Google Fonts | Montserrat, Playfair Display |
 | Font Awesome 6 | Iconos |
 | Formspree | Envío del formulario de contacto (externo al API) |
-| Google Maps JavaScript API | Mapa en página de contacto |
+| Leaflet + OpenStreetMap (CARTO) | Mapa en página de contacto (sin API key) |
 | JWT | Sesión vía `localStorage` + API backend |
 
 ---
