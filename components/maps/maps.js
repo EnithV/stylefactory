@@ -24,9 +24,33 @@ const sucursales = [
 ];
 
 let mapaLeaflet = null;
+const markersPorSede = [];
 
 function resolverImagenMapa(ruta) {
     return typeof resolverUrlImagen === "function" ? resolverUrlImagen(ruta) : ruta;
+}
+
+function nombreCortoSede(nombre) {
+    var partes = (nombre || "").split(" - ");
+    return partes.length > 1 ? partes[partes.length - 1].trim() : nombre;
+}
+
+function crearIconoTarjeta(sucursal) {
+    var titulo = nombreCortoSede(sucursal.nombre);
+    var html =
+        '<div class="map-marker-card" title="' + sucursal.direccion + '">' +
+        '<img class="map-marker-card-img" src="' + resolverImagenMapa(sucursal.img) + '" alt="' + titulo + '">' +
+        '<div class="map-marker-card-info">' +
+        "<h4>" + titulo + "</h4>" +
+        "</div>" +
+        "</div>";
+
+    return L.divIcon({
+        html: html,
+        className: "map-marker-leaflet",
+        iconSize: [148, 76],
+        iconAnchor: [74, 76]
+    });
 }
 
 function mostrarErrorMapa(mensaje) {
@@ -37,6 +61,20 @@ function mostrarErrorMapa(mensaje) {
         '<p><strong>No se pudo cargar el mapa interactivo.</strong></p>' +
         '<p>' + mensaje + "</p>" +
         "</div>";
+}
+
+function marcarSedeActiva(index) {
+    document.querySelectorAll(".sede-card").forEach(function (c, i) {
+        c.classList.toggle("activa", i === index);
+    });
+    document.querySelectorAll(".map-marker-card").forEach(function (m, i) {
+        m.classList.toggle("activa", i === index);
+    });
+    markersPorSede.forEach(function (marker, i) {
+        if (marker) {
+            marker.setZIndexOffset(i === index ? 2000 : i === 0 ? 1000 : 0);
+        }
+    });
 }
 
 function inicializacionMap() {
@@ -57,6 +95,7 @@ function inicializacionMap() {
         mapaLeaflet = null;
     }
 
+    markersPorSede.length = 0;
     listaSedes.innerHTML = "";
     mapEl.innerHTML = "";
 
@@ -64,30 +103,19 @@ function inicializacionMap() {
         scrollWheelZoom: false
     }).setView([4.6473, -74.0662], 12);
 
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
         subdomains: "abcd",
         maxZoom: 19
     }).addTo(mapaLeaflet);
 
-    var iconoMarca = L.icon({
-        iconUrl: resolverImagenMapa("/assets/images/branding/logo-dorado.png"),
-        iconSize: [48, 48],
-        iconAnchor: [24, 48],
-        popupAnchor: [0, -42]
-    });
-
     sucursales.forEach(function (sucursal, index) {
-        var marker = L.marker([sucursal.lat, sucursal.lng], { icon: iconoMarca }).addTo(mapaLeaflet);
+        var marker = L.marker([sucursal.lat, sucursal.lng], {
+            icon: crearIconoTarjeta(sucursal),
+            zIndexOffset: index === 0 ? 1000 : 0
+        }).addTo(mapaLeaflet);
 
-        var popupHtml =
-            '<div class="map-popup">' +
-            '<img src="' + resolverImagenMapa(sucursal.img) + '" alt="' + sucursal.nombre + '">' +
-            "<strong>" + sucursal.nombre + "</strong><br>" +
-            '<span class="map-popup-dir">' + sucursal.direccion + "</span>" +
-            "</div>";
-
-        marker.bindPopup(popupHtml, { maxWidth: 240 });
+        markersPorSede[index] = marker;
 
         var card = document.createElement("div");
         card.className = "sede-card";
@@ -100,12 +128,8 @@ function inicializacionMap() {
             "</div>";
 
         function activarSede() {
-            document.querySelectorAll(".sede-card").forEach(function (c) {
-                c.classList.remove("activa");
-            });
-            card.classList.add("activa");
+            marcarSedeActiva(index);
             mapaLeaflet.setView([sucursal.lat, sucursal.lng], 14, { animate: true });
-            marker.openPopup();
         }
 
         marker.on("click", activarSede);
@@ -115,5 +139,6 @@ function inicializacionMap() {
 
     setTimeout(function () {
         mapaLeaflet.invalidateSize();
+        marcarSedeActiva(0);
     }, 200);
 }
