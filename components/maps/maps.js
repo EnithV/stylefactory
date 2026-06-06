@@ -48,8 +48,8 @@ function crearIconoTarjeta(sucursal) {
     return L.divIcon({
         html: html,
         className: "map-marker-leaflet",
-        iconSize: [148, 76],
-        iconAnchor: [74, 76]
+        iconSize: [196, 80],
+        iconAnchor: [98, 80]
     });
 }
 
