@@ -38,11 +38,24 @@
             <span class="error" id="errorTipo"></span>
         </div>
         <div class="contenedor_subir_imagen">
-            <label>Subir Imagen</label>
+            <label>Imagen del servicio</label>
             <div class="caja_subir">
-                <input type="file" id="inputImagen" name="imagen" accept="image/*">
-                <img id="preview" src="" alt="Vista previa">
-                <span class="error" id="errorPrecio"></span>
+                <select id="imagenPreset" class="form-select form-select-sm mb-2">
+                    <option value="">Imagen por defecto (corte premium)</option>
+                    <option value="corte-premium.png">Corte premium</option>
+                    <option value="tinte-coloracion.png">Tinte y coloración</option>
+                    <option value="keratina.png">Keratina</option>
+                    <option value="barba-afeitado.png">Barba y afeitado</option>
+                    <option value="peinado-eventos.png">Peinado eventos</option>
+                    <option value="mechas-reflejos.png">Mechas y reflejos</option>
+                    <option value="tratamiento-capilar.png">Tratamiento capilar</option>
+                    <option value="cepillado-brasileno.png">Cepillado brasileño</option>
+                    <option value="maquillaje-profesional.png">Maquillaje profesional</option>
+                    <option value="limpieza-facial.png">Limpieza facial</option>
+                </select>
+                <input type="url" id="imagenURL" class="form-control form-control-sm mb-2" placeholder="URL pública (GitHub Pages o /assets/images/...)">
+                <p class="small text-muted mb-2">Las imágenes se sirven desde el repositorio; no se usa Cloudinary.</p>
+                <img id="preview" src="" alt="Vista previa" style="display:none;max-width:100%;border-radius:8px;">
             </div>
         </div>
         <div class="status">

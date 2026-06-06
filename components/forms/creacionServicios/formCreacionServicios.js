@@ -2,6 +2,11 @@ import {
     crearServicio,
     actualizarServicio,
 } from '../../../assets/js/apiClient.js';
+import {
+    assetUrl,
+    IMAGEN_SERVICIO_DEFAULT,
+    normalizarUrlImagen,
+} from '../../../assets/js/imageAssets.js';
 
 const TIPOS_SERVICIO = [
     'Corte',
@@ -11,6 +16,19 @@ const TIPOS_SERVICIO = [
     'Peinado',
     'Estética',
     'General',
+];
+
+const PRESET_ARCHIVOS = [
+    'corte-premium.png',
+    'tinte-coloracion.png',
+    'keratina.png',
+    'barba-afeitado.png',
+    'peinado-eventos.png',
+    'mechas-reflejos.png',
+    'tratamiento-capilar.png',
+    'cepillado-brasileno.png',
+    'maquillaje-profesional.png',
+    'limpieza-facial.png',
 ];
 
 function validar(valor) {
@@ -59,21 +77,64 @@ function validarFormulario(nombre, descripcion, precio, duracionMinutos, tipoSer
     return esValido;
 }
 
+function mostrarPreview(url) {
+    const preview = document.getElementById('preview');
+    if (!preview || !url) return;
+    preview.src = url;
+    preview.style.display = 'block';
+}
+
+function resolverImagenSeleccionada() {
+    const urlManual = document.getElementById('imagenURL')?.value.trim() || '';
+    const preset = document.getElementById('imagenPreset')?.value || '';
+
+    if (urlManual) return normalizarUrlImagen(urlManual);
+    if (preset) return assetUrl('servicios/' + preset);
+    return IMAGEN_SERVICIO_DEFAULT;
+}
+
+function sincronizarPresetDesdeUrl(url) {
+    const select = document.getElementById('imagenPreset');
+    const inputUrl = document.getElementById('imagenURL');
+    if (!select || !inputUrl) return;
+
+    const normalizada = normalizarUrlImagen(url || '');
+    const coincidencia = PRESET_ARCHIVOS.find(function (archivo) {
+        return normalizada.indexOf(archivo) !== -1;
+    });
+
+    select.value = coincidencia || '';
+    inputUrl.value = coincidencia ? '' : normalizada;
+}
+
 function resetFormulario() {
     document.getElementById('editId').value = '';
     document.querySelector('.btn-enviar').textContent = 'Crear Servicio';
     document.getElementById('formCreacionServicios').reset();
+    const preset = document.getElementById('imagenPreset');
+    const urlInput = document.getElementById('imagenURL');
+    if (preset) preset.value = '';
+    if (urlInput) urlInput.value = '';
     const preview = document.getElementById('preview');
-    if (preview) preview.style.display = 'none';
+    if (preview) {
+        preview.removeAttribute('src');
+        preview.style.display = 'none';
+    }
+}
+
+async function notificar(mensaje, tipo) {
+    if (typeof window.sfAlert === 'function') {
+        await window.sfAlert(mensaje, tipo || 'info');
+        return;
+    }
+    alert(mensaje);
 }
 
 export function initFormulario(onServicioGuardado) {
-    let imagenURL = '';
-
     const botonEnviar = document.querySelector('.btn-enviar');
-    const inputImagen = document.getElementById('inputImagen');
-    const preview = document.getElementById('preview');
     const selectTipo = document.getElementById('tipoServicio');
+    const selectPreset = document.getElementById('imagenPreset');
+    const inputUrl = document.getElementById('imagenURL');
 
     if (selectTipo && selectTipo.options.length <= 1) {
         TIPOS_SERVICIO.forEach(function (tipo) {
@@ -84,27 +145,20 @@ export function initFormulario(onServicioGuardado) {
         });
     }
 
-    inputImagen.addEventListener('change', async function () {
-        const archivo = this.files[0];
-        if (!archivo) return;
+    function actualizarVistaImagen() {
+        mostrarPreview(resolverImagenSeleccionada());
+    }
 
-        const formData = new FormData();
-        formData.append('file', archivo);
-        formData.append('upload_preset', 'servicios_app');
+    if (selectPreset) {
+        selectPreset.addEventListener('change', function () {
+            if (this.value && inputUrl) inputUrl.value = '';
+            actualizarVistaImagen();
+        });
+    }
 
-        try {
-            const respuesta = await fetch(
-                'https://api.cloudinary.com/v1_1/dxp3axcje/image/upload',
-                { method: 'POST', body: formData }
-            );
-            const data = await respuesta.json();
-            imagenURL = data.secure_url;
-            preview.src = imagenURL;
-            preview.style.display = 'block';
-        } catch (error) {
-            console.error('Error subiendo imagen:', error);
-        }
-    });
+    if (inputUrl) {
+        inputUrl.addEventListener('input', actualizarVistaImagen);
+    }
 
     botonEnviar.addEventListener('click', async function (event) {
         event.preventDefault();
@@ -129,9 +183,11 @@ export function initFormulario(onServicioGuardado) {
         );
 
         if (!esValido) {
-            alert('El formulario esta incorrecto');
+            await notificar('El formulario está incorrecto. Revisa los campos marcados.', 'warning');
             return;
         }
+
+        const imagenFinal = resolverImagenSeleccionada() || imagenActual || IMAGEN_SERVICIO_DEFAULT;
 
         const payload = {
             nombre,
@@ -140,7 +196,8 @@ export function initFormulario(onServicioGuardado) {
             duracionMinutos: Number(duracionMinutos),
             tipoServicio,
             status,
-            imagen: imagenURL || imagenActual || undefined,
+            imagen: imagenFinal,
+            urlImagen: imagenFinal,
         };
 
         const textoOriginal = botonEnviar.textContent;
@@ -150,16 +207,15 @@ export function initFormulario(onServicioGuardado) {
         try {
             if (esEdicion) {
                 await actualizarServicio(editId, payload);
-                alert('Servicio actualizado');
+                await notificar('Servicio actualizado correctamente.', 'success');
             } else {
                 await crearServicio(payload);
-                alert('Servicio agregado');
+                await notificar('Servicio agregado correctamente.', 'success');
             }
 
             const modal = bootstrap.Modal.getInstance(document.getElementById('exampleModal'));
             if (modal) modal.hide();
             resetFormulario();
-            imagenURL = '';
             if (onServicioGuardado) onServicioGuardado();
         } catch (error) {
             console.error('Error guardando servicio:', error);
@@ -167,7 +223,7 @@ export function initFormulario(onServicioGuardado) {
                 typeof mensajeErrorConexion === 'function'
                     ? mensajeErrorConexion(error)
                     : error.message;
-            alert('No se pudo guardar el servicio: ' + texto);
+            await notificar('No se pudo guardar el servicio: ' + texto, 'error');
         } finally {
             botonEnviar.disabled = false;
             botonEnviar.textContent = textoOriginal;
@@ -190,11 +246,8 @@ export function prepararEdicionServicio(servicio) {
     if (radioActivo) radioActivo.checked = activo;
     if (radioInactivo) radioInactivo.checked = !activo;
 
-    const preview = document.getElementById('preview');
-    if (preview && servicio.imagen) {
-        preview.src = servicio.imagen;
-        preview.style.display = 'block';
-    }
+    sincronizarPresetDesdeUrl(servicio.imagen || '');
+    mostrarPreview(normalizarUrlImagen(servicio.imagen || IMAGEN_SERVICIO_DEFAULT));
 
     document.querySelector('.btn-enviar').textContent = 'Guardar Cambios';
 }
