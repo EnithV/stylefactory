@@ -1,10 +1,12 @@
 # Style Factory — Frontend
 
-Interfaz web de **Style Factory** — **sistema de gestión de reservas** para salón de belleza (proyecto final Generation Colombia). El sitio permite explorar servicios, registrarse, reservar citas con estilistas, gestionar el **perfil del cliente** (datos, estadísticas e historial de reservas) y —con rol `ADMIN`— administrar servicios, reservas y empleados desde un panel de control.
+Interfaz web de **Style Factory** — **sistema de gestión de reservas** para salón de belleza (proyecto final **Full-Stack Java**, Generation Colombia). Este repositorio es el **cliente frontend**; la lógica de negocio, persistencia y seguridad viven en el backend **[Java 17 + Spring Boot](https://github.com/EnithV/stylefactory-backend)** (JWT, JPA, PostgreSQL en Supabase).
+
+El sitio permite explorar servicios, registrarse, reservar citas con estilistas, gestionar el **perfil del cliente** (datos, estadísticas e historial de reservas) y —con rol `ADMIN`— administrar servicios, reservas y empleados desde un panel de control.
 
 Las imágenes del catálogo y estilistas se sirven desde **assets locales** en GitHub Pages (sin dependencia de Cloudinary en producción).
 
-Está construido con **HTML, CSS y JavaScript** vanilla (sin React ni Vue). Los componentes reutilizables (navbar, footer, formularios) se cargan dinámicamente con `fetch`. La autenticación y los datos de negocio se obtienen del API REST desplegado en Render.
+Está construido con **HTML, CSS y JavaScript** vanilla (sin React ni Vue). Los componentes reutilizables (navbar, footer, formularios) se cargan dinámicamente con `fetch`. La autenticación y los datos de negocio se obtienen del API REST en Render.
 
 ---
 
@@ -21,6 +23,16 @@ Está construido con **HTML, CSS y JavaScript** vanilla (sin React ni Vue). Los 
 ---
 
 ## Stack tecnológico
+
+### Proyecto completo (frontend + backend)
+
+| Capa | Tecnologías |
+|------|-------------|
+| Backend | **Java 17**, Spring Boot 4, Spring Security, JWT, JPA, PostgreSQL (Supabase) |
+| Frontend (este repo) | HTML5, CSS3, JavaScript ES6+, Bootstrap 5, Leaflet |
+| Despliegue | GitHub Pages (frontend), Render (API Java) |
+
+### Frontend (este repositorio)
 
 | Tecnología | Uso |
 |------------|-----|
@@ -464,4 +476,4 @@ Para probar endpoints manualmente: [Swagger UI](https://stylefactoryapi.onrender
 ---
 
 *Style Factory — Cortes que inspiran.*  
-Proyecto **Generation Colombia**. API REST: [EnithV/stylefactory-backend](https://github.com/EnithV/stylefactory-backend).
+Proyecto **Generation Colombia · Full-Stack Java**. API REST (Java 17 + Spring Boot): [EnithV/stylefactory-backend](https://github.com/EnithV/stylefactory-backend).
