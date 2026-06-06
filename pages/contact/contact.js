@@ -1,60 +1,10 @@
-/**
- * Actualiza la interfaz del navbar según el estado de sesión del usuario.
- * Muestra el nombre del usuario logueado y oculta el botón de acceder.
- */
-function actualizarNavbar() {
-    const usuarioLogueado = localStorage.getItem('usuarioLogueado');
-    const userInfo = document.getElementById('user-info');
-    const accesoBotones = document.getElementById('acceso-botones');
-    const userNameSpan = document.getElementById('userName');
-    const adminLink = document.getElementById('admin-link');
-    
-    if (usuarioLogueado) {
-        const usuario = JSON.parse(usuarioLogueado);
-        if (userNameSpan) userNameSpan.textContent = typeof saludoNavbar === 'function' ? saludoNavbar(usuario.nombre) : 'Hola, ' + usuario.nombre;
-        if (userInfo) userInfo.style.display = 'block';
-        if (accesoBotones) accesoBotones.style.display = 'none';
-        
-        if (adminLink) {
-            adminLink.style.display = (usuario.rol || '').toUpperCase() === 'ADMIN' ? 'block' : 'none';
-        }
-    } else {
-        if (userInfo) userInfo.style.display = 'none';
-        if (accesoBotones) accesoBotones.style.display = 'block';
-        if (adminLink) adminLink.style.display = 'none';
-    }
-    if (typeof actualizarEnlacesNavbarSesion === 'function') {
-        actualizarEnlacesNavbarSesion();
-    }
-}
+cargarLayoutPublico({
+    navbarPath: '../../components/navbar/navbar.html',
+    footerPath: '../../components/footer/footer.html',
+});
 
 /**
- * Cierra la sesión del usuario y redirige a la página de inicio.
- */
-function cerrarSesion() {
-    limpiarSesionLocal();
-    actualizarNavbar();
-    window.location.href = typeof urlApp === 'function' ? urlApp('/index.html') : '../../index.html';
-}
-
-/**
- * Carga el componente del navbar desde su archivo HTML.
- * La ruta es relativa a la ubicación de esta página (pages/contact/).
- */
-fetch('../../components/navbar/navbar.html')
-    .then(res => res.text())
-    .then(html => {
-        document.getElementById('header').innerHTML = html;
-        if (typeof inicializarNavbarCargado === 'function') {
-            inicializarNavbarCargado();
-        } else {
-            actualizarNavbar();
-        }
-    })
-    .catch(err => console.error('Error cargando el navbar:', err));
-
-/**
- * Carga el componente del mapa de Google Maps.
+ * Carga el componente del mapa (Leaflet).
  * Inyecta dinámicamente el CSS correspondiente e inicializa el mapa.
  */
 fetch('../../components/maps/maps.html')
@@ -95,19 +45,6 @@ fetch('../../components/forms/contacto/formContacto.html')
         }
     })
     .catch(err => console.error('Error cargando el formulario de contacto:', err));
-
-/**
- * Carga el componente del footer desde su archivo HTML.
- */
-fetch('../../components/footer/footer.html')
-    .then(res => res.text())
-    .then(html => {
-        document.getElementById('footer-placeholder').innerHTML = html;
-        if (typeof aplicarRutasImagenes === 'function') {
-            aplicarRutasImagenes(document.getElementById('footer-placeholder'));
-        }
-    })
-    .catch(err => console.error('Error cargando el footer:', err));
 
 document.addEventListener('DOMContentLoaded', function () {
     if (typeof aplicarRutasImagenes === 'function') {

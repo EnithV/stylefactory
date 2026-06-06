@@ -114,7 +114,7 @@ let grafico;
 function construirGrafico(rango) {
 
     // Obtiene el bloque de datos correspondiente al rango recibido
-    const d = datos[rango];
+    const d = datosActivos[rango] || datos[rango];
     // Si ya existe un gráfico previo, lo destruye antes de crear uno nuevo
     if (grafico) grafico.destroy();
 
@@ -188,7 +188,7 @@ function cambiarRango(rango, boton) {
     boton.classList.add('activo');
 
     // Obtiene el bloque de datos del nuevo rango seleccionado
-    const d = datos[rango];
+    const d = datosActivos[rango] || datos[rango];
 
     // Itera sobre las 4 claves de métricas para actualizar cada tarjeta del dashboard
     ['ingresos', 'reservas', 'clientes', 'canceladas'].forEach(k => {
@@ -207,33 +207,181 @@ function cambiarRango(rango, boton) {
     construirGrafico(rango);
 }
 
-function initMetricas(){
+let datosActivos = datos;
+let serviciosActivos = servicios;
 
-    // Selecciona el <tbody> del HTML donde se van a insertar las filas dinámicamente
-const tbody = document.getElementById('tabla-body');
-if (!tbody) return;
-// Recorre cada servicio del array para generar una fila HTML por cada uno
- // limpiar tabla
-    tbody.innerHTML = "";
-servicios.forEach(s => {
-    // Convierte el valor interno del estado en texto legible para el usuario
-    // Si no es activo ni pausado, cae en el caso por defecto: 'Eliminado'
-    const etiqueta = s.estado === 'activo'  ? 'Activo'
-                    : s.estado === 'pausado' ? 'Pausado'
-                    : 'Eliminado';
+function formatearMoneda(valor) {
+    return '$' + Math.round(valor || 0).toLocaleString('es-CO');
+}
 
-    // Agrega una nueva fila al final del tbody usando template literals
-    // La clase del <span> usa s.estado para aplicar el color correcto desde CSS
-    tbody.innerHTML += `
+function diasDesdeHoy(fechaStr) {
+    var hoy = new Date();
+    hoy.setHours(12, 0, 0, 0);
+    var f = new Date(fechaStr + 'T12:00:00');
+    return Math.floor((hoy - f) / (1000 * 60 * 60 * 24));
+}
+
+function reservaActiva(r) {
+    return (r.estado || '').toUpperCase() !== 'CANCELADA';
+}
+
+function ingresoReserva(r) {
+    return reservaActiva(r) ? Number(r.precioServicio || 0) : 0;
+}
+
+function calcularMetricasDesdeApi(reservas) {
+    var diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+    function resumenPeriodo(dias, etiquetas, agrupador) {
+        var enPeriodo = reservas.filter(function (r) {
+            return r.fecha && diasDesdeHoy(r.fecha) >= 0 && diasDesdeHoy(r.fecha) < dias;
+        });
+        var activas = enPeriodo.filter(reservaActiva);
+        var ingresosSerie = etiquetas.map(function (_, idx) {
+            return agrupador(activas, idx).reduce(function (sum, r) {
+                return sum + ingresoReserva(r);
+            }, 0);
+        });
+        var reservasSerie = etiquetas.map(function (_, idx) {
+            return agrupador(activas, idx).length;
+        });
+        var totalIngresos = activas.reduce(function (s, r) { return s + ingresoReserva(r); }, 0);
+        var totalReservas = activas.length;
+        var clientes = {};
+        activas.forEach(function (r) {
+            var clave = r.usuarioId || r.nombreUsuario || 'anon';
+            clientes[clave] = true;
+        });
+        var canceladas = enPeriodo.filter(function (r) {
+            return (r.estado || '').toUpperCase() === 'CANCELADA';
+        }).length;
+        var pctCancel = enPeriodo.length
+            ? ((canceladas / enPeriodo.length) * 100).toFixed(1) + '%'
+            : '0%';
+
+        return {
+            labels: etiquetas,
+            ingresos: ingresosSerie,
+            reservas: reservasSerie,
+            metricas: {
+                ingresos: formatearMoneda(totalIngresos),
+                reservas: String(totalReservas),
+                clientes: String(Object.keys(clientes).length),
+                canceladas: pctCancel,
+            },
+            deltas: {
+                ingresos: '—',
+                reservas: '—',
+                clientes: '—',
+                canceladas: '—',
+            },
+            colores: {
+                ingresos: 'verde',
+                reservas: 'verde',
+                clientes: 'verde',
+                canceladas: canceladas > 0 ? 'rojo' : 'verde',
+            },
+        };
+    }
+
+    var etiquetas7d = [];
+    var agrupadores7d = [];
+    for (var i = 6; i >= 0; i--) {
+        var d = new Date();
+        d.setDate(d.getDate() - i);
+        etiquetas7d.push(diasSemana[d.getDay()]);
+        agrupadores7d.push(d.toISOString().slice(0, 10));
+    }
+
+    return {
+        '7d': resumenPeriodo(7, etiquetas7d, function (lista, idx) {
+            var fechaObjetivo = agrupadores7d[idx];
+            return lista.filter(function (r) { return r.fecha === fechaObjetivo; });
+        }),
+        '30d': resumenPeriodo(30, ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'], function (lista, idx) {
+            return lista.filter(function (r) {
+                var dias = diasDesdeHoy(r.fecha);
+                return dias >= idx * 7 && dias < (idx + 1) * 7;
+            });
+        }),
+        '90d': resumenPeriodo(90, ['Mes 1', 'Mes 2', 'Mes 3'], function (lista, idx) {
+            return lista.filter(function (r) {
+                var dias = diasDesdeHoy(r.fecha);
+                return dias >= idx * 30 && dias < (idx + 1) * 30;
+            });
+        }),
+    };
+}
+
+function calcularTablaServicios(reservas, catalogo) {
+    var conteo = {};
+    reservas.forEach(function (r) {
+        if (!reservaActiva(r)) return;
+        var id = r.servicioId || r.nombreServicio;
+        if (!conteo[id]) {
+            conteo[id] = { reservas: 0, ingresos: 0, nombre: r.nombreServicio || 'Servicio' };
+        }
+        conteo[id].reservas += 1;
+        conteo[id].ingresos += ingresoReserva(r);
+    });
+
+    return (catalogo || []).map(function (s) {
+        var key = s.id;
+        var stats = conteo[key] || conteo[s.nombre] || { reservas: 0, ingresos: 0, nombre: s.nombre };
+        return {
+            nombre: s.nombre || stats.nombre,
+            reservas: stats.reservas,
+            ingresos: formatearMoneda(stats.ingresos),
+            estado: s.status === false || s.estado === false ? 'pausado' : 'activo',
+        };
+    }).sort(function (a, b) { return b.reservas - a.reservas; });
+}
+
+function renderTablaServicios(lista) {
+    var tbody = document.getElementById('tabla-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    (lista || serviciosActivos).forEach(function (s) {
+        var etiqueta = s.estado === 'activo' ? 'Activo'
+            : s.estado === 'pausado' ? 'Pausado'
+            : 'Eliminado';
+        tbody.innerHTML += `
         <tr>
             <td>${s.nombre}</td>
             <td>${s.reservas}</td>
             <td>${s.ingresos}</td>
             <td><span class="badge ${s.estado}">${etiqueta}</span></td>
-        </tr>
-    `;
-});
+        </tr>`;
+    });
+}
 
-// Llama a construirGrafico al cargar la página con '7d' como rango por defecto
-construirGrafico('7d');
+async function initMetricas() {
+    try {
+        var api = await import('../../assets/js/apiClient.js');
+        var reservas = await api.listarReservas();
+        var catalogo = await api.listarServicios();
+        datosActivos = calcularMetricasDesdeApi(reservas);
+        serviciosActivos = calcularTablaServicios(reservas, catalogo);
+        Object.keys(datosActivos).forEach(function (k) { datos[k] = datosActivos[k]; });
+    } catch (e) {
+        console.warn('Métricas desde API no disponibles:', e);
+        datosActivos = datos;
+        serviciosActivos = servicios;
+    }
+
+    renderTablaServicios(serviciosActivos);
+
+    var rangoInicial = '7d';
+    var d = datosActivos[rangoInicial];
+    ['ingresos', 'reservas', 'clientes', 'canceladas'].forEach(function (k) {
+        var m = document.getElementById('m-' + k);
+        var delta = document.getElementById('d-' + k);
+        if (m) m.textContent = d.metricas[k];
+        if (delta) {
+            delta.textContent = d.deltas[k];
+            delta.className = d.colores[k];
+        }
+    });
+
+    construirGrafico(rangoInicial);
 }

@@ -139,6 +139,47 @@
         return s;
     }
 
+    function hoyCadenaColombia() {
+        return new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'America/Bogota',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        }).format(new Date());
+    }
+
+    function puedeCancelarReserva(r) {
+        var estadoReserva = (r.estado || '').toUpperCase();
+        if (estadoReserva !== 'PENDIENTE' && estadoReserva !== 'CONFIRMADA') return false;
+        if (!r.fecha) return false;
+        return String(r.fecha) >= hoyCadenaColombia();
+    }
+
+    async function cancelarReservaCliente(id) {
+        if (!window.confirm('¿Deseas cancelar esta cita?')) return;
+
+        var res = await fetch(apiBase() + '/reservas/' + id + '/estado', {
+            method: 'PATCH',
+            headers: authHeaders(),
+            body: JSON.stringify({ estado: 'CANCELADA' }),
+        });
+
+        if (res.status === 401) {
+            limpiarSesionLocal();
+            mostrarPantallaNoSesion();
+            return;
+        }
+        if (!res.ok) {
+            var texto = await res.text().catch(function () { return ''; });
+            throw new Error(texto || 'No se pudo cancelar la reserva');
+        }
+
+        if (typeof sfAlert === 'function') {
+            await sfAlert('Reserva cancelada correctamente.', 'success');
+        }
+        await renderPerfilUsuario();
+    }
+
     function crearElementoReserva(r, idx) {
         var nombreServicio = r.nombreServicio || 'Servicio';
         var profesional = r.nombreEmpleado || '';
@@ -177,6 +218,24 @@
 
         var acciones = document.createElement('div');
         acciones.className = 'reserva-acciones';
+
+        if (puedeCancelarReserva(r)) {
+            var btnCancelar = document.createElement('button');
+            btnCancelar.type = 'button';
+            btnCancelar.className = 'btn-cancelar-reserva';
+            btnCancelar.textContent = 'Cancelar';
+            btnCancelar.addEventListener('click', function () {
+                btnCancelar.disabled = true;
+                cancelarReservaCliente(r.id).catch(function (err) {
+                    btnCancelar.disabled = false;
+                    if (typeof sfAlert === 'function') {
+                        sfAlert(err.message || 'Error al cancelar.', 'error');
+                    }
+                });
+            });
+            acciones.appendChild(btnCancelar);
+        }
+
         var spanEstado = document.createElement('span');
         spanEstado.className = 'reserva-estado';
         spanEstado.style.color = estado.color;
@@ -321,40 +380,6 @@
         return res.json().catch(function () { return null; });
     }
 
-    function actualizarNavbar() {
-        var sesion = obtenerSesionLocal();
-        var userInfo = document.getElementById('user-info');
-        var accesoBotones = document.getElementById('acceso-botones');
-        var userNameEl = document.getElementById('userName');
-        var userNameLink = document.getElementById('userNameLink');
-
-        if (sesion) {
-            var saludo = typeof saludoNavbar === 'function' ? saludoNavbar(sesion.nombre) : 'Hola, ' + sesion.nombre;
-            if (userNameEl) userNameEl.textContent = saludo;
-            if (userNameLink) {
-                userNameLink.href = ruta('/pages/perfilUsuario/perfilUsuario.html');
-                userNameLink.setAttribute('aria-current', 'page');
-            }
-            if (userInfo) userInfo.style.display = 'block';
-            if (accesoBotones) accesoBotones.style.display = 'none';
-        } else {
-            if (userInfo) userInfo.style.display = 'none';
-            if (accesoBotones) accesoBotones.style.display = 'block';
-        }
-
-        if (typeof actualizarEnlacesNavbarSesion === 'function') {
-            actualizarEnlacesNavbarSesion();
-        }
-        if (typeof marcarEnlaceNavbarActivo === 'function') {
-            marcarEnlaceNavbarActivo();
-        }
-    }
-
-    function cerrarSesion() {
-        limpiarSesionLocal();
-        window.location.href = ruta('/index.html');
-    }
-
     function aplicarEnlacesInternos() {
         ['linkReservar', 'linkCatalogo'].forEach(function (id) {
             var el = document.getElementById(id);
@@ -482,25 +507,15 @@
     }
 
     function cargarLayout() {
-        fetch('../../components/navbar/navbar.html')
-            .then(function (res) { return res.text(); })
-            .then(function (html) {
-                document.getElementById('header').innerHTML = html;
-                if (typeof aplicarRutasImagenes === 'function') {
-                    aplicarRutasImagenes(document.getElementById('header'));
-                }
-                actualizarNavbar();
-                var btn = document.getElementById('btnCerrarSesion');
-                if (btn) btn.addEventListener('click', cerrarSesion);
-            })
-            .catch(function (err) { console.error('Navbar:', err); });
-
-        fetch('../../components/footer/footer.html')
-            .then(function (res) { return res.text(); })
-            .then(function (html) {
-                document.getElementById('footer-placeholder').innerHTML = html;
-            })
-            .catch(function (err) { console.error('Footer:', err); });
+        cargarLayoutPublico({
+            navbarPath: '../../components/navbar/navbar.html',
+            footerPath: '../../components/footer/footer.html',
+            navbarOpciones: { resaltarPerfil: true },
+            onNavbarReady: function () {
+                var link = document.getElementById('userNameLink');
+                if (link) link.href = ruta('/pages/perfilUsuario/perfilUsuario.html');
+            },
+        });
     }
 
     document.addEventListener('DOMContentLoaded', function () {

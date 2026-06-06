@@ -1,6 +1,8 @@
 # Style Factory — Frontend
 
-Interfaz web de **Style Factory**, salón de belleza y bienestar en Bogotá. El sitio permite explorar servicios, registrarse, iniciar sesión, reservar citas con estilistas, consultar el historial personal de reservas y —con rol `ADMIN`— administrar servicios y reservas desde un panel de control.
+Interfaz web de **Style Factory** — **sistema de gestión de reservas** para salón de belleza (proyecto final Generation Colombia). El sitio permite explorar servicios, registrarse, reservar citas con estilistas, gestionar el **perfil del cliente** (datos, estadísticas e historial de reservas) y —con rol `ADMIN`— administrar servicios, reservas y empleados desde un panel de control.
+
+Las imágenes del catálogo y estilistas se sirven desde **assets locales** en GitHub Pages (sin dependencia de Cloudinary en producción).
 
 Está construido con **HTML, CSS y JavaScript** vanilla (sin React ni Vue). Los componentes reutilizables (navbar, footer, formularios) se cargan dinámicamente con `fetch`. La autenticación y los datos de negocio se obtienen del API REST desplegado en Render.
 
@@ -47,8 +49,9 @@ Todas las rutas del menú usan el prefijo **`/stylefactory/`** porque GitHub Pag
 | Login | `/pages/login/` | Formulario en iframe |
 | Registro | `/pages/registro/` | Alta de clientes en iframe |
 | Reservas | `/pages/reservations/` | Flujo: servicio → estilista → fecha/hora → confirmar |
-| Mis reservas | `/pages/misReservas/` | Historial del cliente autenticado |
-| Admin | `/pages/admin/panelDeControl/` | Panel, métricas, gestión servicios/reservas |
+| Mi perfil | `/pages/perfilUsuario/` | Hub del cliente: datos, stats, reservas, editar perfil |
+| Mis reservas | `/pages/misReservas/` | Redirige a `perfilUsuario.html#reservas` (compatibilidad) |
+| Admin | `/pages/admin/panelDeControl/` | Panel: métricas, servicios, reservas y empleados |
 
 ---
 
@@ -61,12 +64,15 @@ stylefactory/
 │   ├── css/
 │   │   └── main.css
 │   └── js/
-│       ├── config.js                 # API_BASE, urlApp(), navbar helpers
+│       ├── config.js                 # API_BASE, urlApp(), navbar, imágenes
 │       ├── apiClient.js              # Módulo ES6: CRUD servicios/reservas
+│       ├── imageAssets.js            # URLs locales + mapa legacy Cloudinary
+│       ├── sfAlert.js                # Modales de alerta (admin y formularios)
 │       ├── formValidaciones.js       # Validaciones compartidas
-│       ├── productosCatalogo.js    # Fallback local del catálogo
-│       ├── reservaPendiente.js      # Progreso de reserva sin sesión
-│       └── main.js                 # Home: carga de secciones
+│       ├── productosCatalogo.js      # Fallback local del catálogo
+│       ├── reservaPendiente.js       # Progreso de reserva sin sesión
+│       └── main.js                   # Home: carga de secciones
+│   └── images/                       # Imágenes locales (servicios, empleados, etc.)
 ├── components/
 │   ├── navbar/
 │   │   └── navbar.html
@@ -91,16 +97,18 @@ stylefactory/
 │   ├── catalogoServicios/
 │   ├── aboutUs/
 │   ├── reservations/
-│   ├── misReservas/
+│   ├── perfilUsuario/                # Hub del cliente autenticado
+│   ├── misReservas/                  # Redirección al perfil
 │   └── admin/
 │       ├── panelDeControl/
 │       ├── listaServicios/
 │       ├── listaReservas/
-│       └── reservarServicios/
-└── dataBase/                       # Scripts SQL de referencia (Supabase)
-    ├── query_base_de_datos.sql
+│       └── empleados/                # CRUD estilistas + horarios
+└── dataBase/                         # Scripts SQL de referencia (Supabase)
     ├── seed_catalogo_stylefactory.sql
-    └── migracion_duracion_servicios.sql
+    ├── migracion_imagenes_locales.sql
+    ├── migracion_duracion_servicios.sql
+    └── query_base_de_datos.sql       # Esquema legacy del curso (no usar en prod)
 ```
 
 ---
@@ -121,6 +129,10 @@ const GITHUB_PAGES_BASE_PATH = "/stylefactory";
 | `urlApp('/pages/login/login.html')` | Arma rutas absolutas para redirecciones desde iframes |
 | `saludoNavbar(nombre)` | Primer nombre en el navbar |
 | `marcarEnlaceNavbarActivo()` | Resalta la página actual en el menú |
+| `resolverUrlImagen(url)` | Cloudinary legacy → URL en GitHub Pages |
+| `actualizarNavbar()` / `cerrarSesion()` | Sesión compartida en todas las páginas públicas |
+| `cargarLayoutPublico()` | Carga navbar y footer desde componentes HTML |
+| `configurarEnlacesPerfilNavbar()` | Enlaces dinámicos a perfil y reservas |
 | `actualizarEnlacesNavbarSesion()` | Muestra «Mis reservas» y «Administrador» si hay sesión |
 | `mensajeErrorConexion(error)` | Texto claro ante NetworkError o cold start de Render |
 
@@ -184,8 +196,8 @@ El token **no** se persiste en Supabase; vive en el navegador hasta expiración 
 ### Navbar con sesión
 
 - Sin sesión: botón «Iniciar sesión».
-- Con sesión: «Hola, {primer nombre}» + «Cerrar sesión».
-- Enlaces condicionales: **Mis reservas** (cualquier usuario logueado), **Administrador** (solo `ADMIN`).
+- Con sesión: **«Hola, {primer nombre}»** (enlace al perfil) + «Cerrar sesión».
+- Enlaces condicionales: **Mis reservas** → `perfilUsuario.html#reservas`, **Administrador** (solo `ADMIN`).
 
 ```mermaid
 sequenceDiagram
@@ -265,36 +277,41 @@ Content-Type: application/json
 `pages/reservations/reservations.js` + `components/confirmacionServicio/confirmacionServicio.js`:
 
 1. Muestra servicio desde `localStorage`.
-2. Carrusel de **6 estilistas** (datos UI con `empleadoId` 1–6 alineados al seed SQL).
-3. Calendario y slots con reglas en zona **America/Bogota**:
+2. Estilistas desde `GET /empleados/catalogo` (fallback local si el API no responde).
+3. Horarios desde `GET /horarios` cuando hay datos; si no, genera slots 9:00–18:00.
+4. Calendario y slots con reglas en zona **America/Bogota**:
    - Atención 9:00 a.m. – 8:00 p.m.
    - Último inicio de cita: 6:00 p.m.
    - Duración según `duracionMinutos` del servicio.
-4. Si no hay sesión: guarda progreso en `sessionStorage` y pide login/registro.
-5. Confirmación: `POST /reservas` con `estado: "CONFIRMADA"`.
-6. Modal de éxito y redirección.
+5. Si no hay sesión: guarda progreso en `sessionStorage` y pide login/registro.
+6. Confirmación: `POST /reservas` con `estado: "CONFIRMADA"`.
+7. Modal de éxito y redirección a **`perfilUsuario.html#reservas`**.
 
-> **Nota:** La disponibilidad horaria en pantalla es **simulada** en el frontend. El API valida las reglas reales al crear la reserva. La integración con `GET /horarios` y `GET /empleados/catalogo` está prevista como mejora futura.
+> **Nota:** El API valida las reglas reales de horario en `ReservaService`. La UI puede mostrar slots generados si la BD no tiene horarios cargados para el estilista.
 
-### Mis reservas
+### Perfil del cliente (`pages/perfilUsuario/`)
 
-`pages/misReservas/misReservas.js`:
+Hub principal del usuario autenticado:
 
-- Requiere sesión (`token` + `usuarioLogueado`).
-- `GET /reservas/mis-reservas` con Bearer token.
-- Tabla: servicio, estilista, fecha, hora, estado.
-- Ante 401: limpia sesión y redirige a login.
+- `GET /usuarios/{id}` — datos completos del perfil.
+- `GET /reservas/mis-reservas` — historial con servicio, estilista, fecha, hora y estado.
+- `PUT /usuarios/{id}` — editar nombre, correo y teléfono (modal en la misma página).
+- Estadísticas: total de reservas, próxima cita, profesional favorito.
+- Ante 401: limpia sesión y muestra pantalla de login.
+
+`pages/misReservas/` redirige automáticamente al perfil (`#reservas`) por compatibilidad con enlaces antiguos.
 
 ### Panel de administración
 
-| Página | Integración API |
-|--------|-----------------|
-| `panelDeControl` | Verifica token y rol ADMIN; carga métricas (datos demo en `metricas.js`) |
-| `listaServicios` | CRUD vía `apiClient.js`; formulario en iframe `creacionServicios` |
-| `listaReservas` | `GET /reservas`, `DELETE`, selector de estado con `PATCH …/estado` |
-| `reservarServicios` | Vista auxiliar (sin integración API completa) |
+| Sección | Integración API |
+|---------|-----------------|
+| `panelDeControl` | `verificarSesionAdmin()` — solo rol `ADMIN` |
+| `metricas` | Gráficos con **datos de demostración** (`metricas.js`) |
+| `listaServicios` | CRUD vía `apiClient.js`; imágenes con presets locales (sin Cloudinary) |
+| `listaReservas` | `GET /reservas`, `DELETE`, `PATCH …/estado` (selector de estado) |
+| `empleados` | `GET/POST/PUT/DELETE /empleados`, `POST /horarios`, gestión de disponibilidad |
 
-El panel exige JWT válido. Si el token expiró, las peticiones devuelven 401/403 → volver a iniciar sesión.
+Feedback con `sfAlert.js` en admin y formularios. El panel exige JWT válido; si expiró → 401/403 y volver a login.
 
 ---
 
@@ -310,10 +327,25 @@ Implicaciones:
 
 ---
 
+## Imágenes locales
+
+Las fotos de servicios, estilistas, branding y páginas estáticas viven en `assets/images/`. El sitio publicado las sirve desde GitHub Pages.
+
+| Módulo | Función |
+|--------|---------|
+| `imageAssets.js` | `assetUrl()`, `normalizarUrlImagen()` para respuestas del API |
+| `config.js` → `resolverUrlImagen()` | Mismo mapa legacy en componentes HTML |
+| `creacionServicios` (admin) | Selector de preset + campo URL (sin subida a Cloudinary) |
+| `empleados` (admin) | Presets `sty1`–`sty6` o URL pública |
+
+En **Supabase**, ejecutar `migracion_imagenes_locales.sql` si la BD aún tenía URLs de Cloudinary.
+
+---
+
 ## Contacto y mapa
 
-- **Formulario:** Formspree (`formContacto.html` → `https://formspree.io/f/…`). No pasa por el API de Style Factory.
-- **Mapa:** Google Maps en `pages/contact/contact.html` + `components/maps/`. Requiere API key con referrer autorizado para `enithv.github.io` y facturación activa en Google Cloud si aplica.
+- **Formulario:** Formspree (`formContacto.html`). No pasa por el API de Style Factory.
+- **Mapa:** **Leaflet** + OpenStreetMap (CARTO Voyager) en `components/maps/maps.js`. **No requiere API key**.
 
 ---
 
@@ -362,13 +394,14 @@ Los enlaces del navbar usan rutas absolutas `/stylefactory/...` para funcionar e
 
 La carpeta `dataBase/` contiene SQL para **Supabase**, no se ejecuta desde el frontend:
 
-| Archivo | Contenido |
-|---------|-----------|
-| `query_base_de_datos.sql` | DDL tablas usuarios, servicios, empleados, reservas, horarios |
-| `seed_catalogo_stylefactory.sql` | 6 estilistas + 10 servicios (IDs alineados con `reservations.js`) |
-| `migracion_duracion_servicios.sql` | Columna `duracion_minutos` |
+| Archivo | Cuándo ejecutarlo |
+|---------|-------------------|
+| `seed_catalogo_stylefactory.sql` | BD vacía o para refrescar catálogo (6 estilistas + 10 servicios) |
+| `migracion_imagenes_locales.sql` | URLs de Cloudinary → GitHub Pages en `empleados` y `servicios` |
+| `migracion_duracion_servicios.sql` | Si falta la columna `duracion_minutos` |
+| `query_base_de_datos.sql` | **Solo referencia** (esquema legacy del curso; Hibernate crea las tablas reales) |
 
-Ejecutar en Supabase SQL Editor cuando se configure el backend en Render.
+Ejecutar en **Supabase → SQL Editor** del proyecto vinculado a Render (`SPRING_DATASOURCE_*`).
 
 ---
 
@@ -379,7 +412,7 @@ Ejecutar en Supabase SQL Editor cuando se configure el backend en Render.
 | NetworkError al login | Cold start Render o `file://` | Usar GitHub Pages o Live Server; esperar ~1 min |
 | 403 en panel admin | Token expirado o ausente | Cerrar sesión y volver a login |
 | Catálogo vacío | API caído | Revisar Render; entra fallback local |
-| Mapa en blanco | API key Maps restringida | Configurar referrer en Google Cloud |
+| Mapa en blanco | Bloqueo de red o JS | Revisar consola; Leaflet carga tiles de CARTO/OSM |
 | Redirect roto tras login | Rutas sin `urlApp()` | Verificar `config.js` y prefijo `/stylefactory` |
 | Reserva rechazada por API | Horario inválido vs reglas backend | Elegir slot antes de 6 p.m. que quepa con duración |
 
@@ -389,27 +422,30 @@ Ejecutar en Supabase SQL Editor cuando se configure el backend en Render.
 
 | Funcionalidad | Estado |
 |---------------|--------|
-| Home, nosotros, contacto | Operativo |
+| Home, nosotros, contacto + mapa Leaflet | Operativo |
+| Imágenes locales (sin Cloudinary activo) | Operativo |
 | Login / registro + validaciones + toggle contraseña | Operativo |
 | Catálogo con API + fallback + filtros | Operativo |
-| Flujo de reserva + confirmación API | Operativo |
-| Mis reservas (cliente) | Operativo |
-| Panel admin servicios (CRUD API) | Operativo |
+| Flujo de reserva + API catálogo/horarios | Operativo |
+| Perfil cliente (datos, stats, reservas, editar) | Operativo |
+| Panel admin servicios (CRUD, imágenes locales) | Operativo |
 | Panel admin reservas (listar, borrar, PATCH estado) | Operativo |
+| Panel admin empleados + horarios | Operativo |
 | Redirect login por rol (ADMIN → panel) | Operativo |
 | Retomar reserva tras login/registro | Operativo |
+| Post-reserva → perfil del cliente | Operativo |
 | Despliegue GitHub Pages | Operativo |
-| Métricas del dashboard admin | Datos de demostración |
-| Disponibilidad real de estilistas/horarios en UI | Pendiente (mock en calendario) |
-| Mensaje de éxito registro (estilo editorial) | Pendiente de unificar con login |
+| Métricas del dashboard admin (desde API) | Operativo |
+| Cancelar reserva desde perfil (cliente) | Operativo |
+| Bloqueo de horarios ocupados en calendario | Operativo |
+| Métricas admin desde API | Operativo |
+| Navbar centralizado (`config.js`) | Operativo |
 
 ### Mejoras futuras sugeridas
 
-- Conectar calendario de reservas a `GET /empleados/catalogo` y `GET /horarios`.
-- Métricas reales desde agregaciones del API.
-- Unificar estilo de avisos de éxito en registro (como login).
-- Cerrar sesión consistente (`token` + `usuarioLogueado`) en todas las páginas.
-- Restringir API key de Google Maps por dominio y evitar exponerla en repos públicos.
+- Deltas comparativos en métricas (período anterior).
+- Refresco automático de slots ocupados tras confirmar reserva.
+- Endpoint dedicado de métricas en el backend.
 
 ---
 
@@ -418,9 +454,10 @@ Ejecutar en Supabase SQL Editor cuando se configure el backend en Render.
 Este frontend es el cliente oficial del API documentado en [stylefactory-backend](https://github.com/EnithV/stylefactory-backend). La integración principal ocurre en:
 
 - Autenticación (`/auth/*`)
-- Catálogo (`GET /servicios`)
-- Reservas (`POST /reservas`, `GET /reservas/mis-reservas`)
-- Administración (`/servicios`, `/reservas`, `PATCH /reservas/{id}/estado`)
+- Perfil (`GET/PUT /usuarios/{id}`)
+- Catálogo (`GET /servicios`, `GET /empleados/catalogo`, `GET /horarios`, `GET /reservas/ocupadas`)
+- Reservas (`POST /reservas`, `GET /reservas/mis-reservas`, `PATCH /reservas/{id}/estado`)
+- Administración (`/servicios`, `/reservas`, `/empleados`)
 
 Para probar endpoints manualmente: [Swagger UI](https://stylefactoryapi.onrender.com/swagger-ui/index.html).
 

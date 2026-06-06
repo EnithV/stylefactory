@@ -259,3 +259,96 @@ function mensajeErrorConexion(error) {
     }
     return error.message || "No se pudo conectar con el servidor. Intente más tarde.";
 }
+
+/**
+ * Actualiza el navbar según la sesión almacenada en localStorage.
+ */
+function actualizarNavbar(opciones) {
+    var opts = opciones || {};
+    var usuarioLogueado = localStorage.getItem('usuarioLogueado');
+    var userInfo = document.getElementById('user-info');
+    var accesoBotones = document.getElementById('acceso-botones');
+    var userNameSpan = document.getElementById('userName');
+    var userNameLink = document.getElementById('userNameLink');
+    var adminLink = document.getElementById('admin-link');
+
+    if (usuarioLogueado) {
+        try {
+            var usuario = JSON.parse(usuarioLogueado);
+            if (userNameSpan) {
+                userNameSpan.textContent = typeof saludoNavbar === 'function'
+                    ? saludoNavbar(usuario.nombre)
+                    : 'Hola, ' + usuario.nombre;
+            }
+            if (userInfo) userInfo.style.display = 'block';
+            if (accesoBotones) accesoBotones.style.display = 'none';
+            if (adminLink) {
+                adminLink.style.display =
+                    (usuario.rol || '').toUpperCase() === 'ADMIN' ? 'block' : 'none';
+            }
+            if (opts.resaltarPerfil && userNameLink) {
+                userNameLink.setAttribute('aria-current', 'page');
+            }
+        } catch (e) {
+            if (userInfo) userInfo.style.display = 'none';
+            if (accesoBotones) accesoBotones.style.display = 'block';
+        }
+    } else {
+        if (userInfo) userInfo.style.display = 'none';
+        if (accesoBotones) accesoBotones.style.display = 'block';
+        if (adminLink) adminLink.style.display = 'none';
+    }
+
+    if (typeof actualizarEnlacesNavbarSesion === 'function') {
+        actualizarEnlacesNavbarSesion();
+    }
+}
+
+/**
+ * Cierra la sesión y redirige al inicio del sitio.
+ */
+function cerrarSesion() {
+    limpiarSesionLocal();
+    actualizarNavbar();
+    var destino = window._layoutHomePath || '/index.html';
+    window.location.href = typeof urlApp === 'function' ? urlApp(destino) : destino;
+}
+
+/**
+ * Carga navbar y, opcionalmente, footer desde componentes HTML.
+ */
+function cargarLayoutPublico(config) {
+    var cfg = config || {};
+    window._layoutHomePath = cfg.homePath || '/index.html';
+
+    var headerEl = document.getElementById('header');
+    if (headerEl && cfg.navbarPath) {
+        fetch(cfg.navbarPath)
+            .then(function (res) { return res.text(); })
+            .then(function (html) {
+                headerEl.innerHTML = html;
+                if (typeof inicializarNavbarCargado === 'function') {
+                    inicializarNavbarCargado();
+                } else {
+                    actualizarNavbar(cfg.navbarOpciones);
+                    var btn = document.getElementById('btnCerrarSesion');
+                    if (btn) btn.addEventListener('click', cerrarSesion);
+                    if (typeof marcarEnlaceNavbarActivo === 'function') {
+                        marcarEnlaceNavbarActivo();
+                    }
+                }
+                if (typeof cfg.onNavbarReady === 'function') {
+                    cfg.onNavbarReady();
+                }
+            })
+            .catch(function (err) { console.error('Error cargando navbar:', err); });
+    }
+
+    var footerEl = document.getElementById('footer-placeholder');
+    if (footerEl && cfg.footerPath) {
+        fetch(cfg.footerPath)
+            .then(function (res) { return res.text(); })
+            .then(function (html) { footerEl.innerHTML = html; })
+            .catch(function (err) { console.error('Error cargando footer:', err); });
+    }
+}

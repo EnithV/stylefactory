@@ -4,45 +4,6 @@ import { listarServicios } from '../../assets/js/apiClient.js';
 let filtroTipoActivo = 'todos';
 let catalogoServicios = [];
 
-/**
- * Actualiza la interfaz del navbar según el estado de sesión del usuario.
- */
-function actualizarNavbar() {
-    const usuarioLogueado = localStorage.getItem('usuarioLogueado');
-    const userInfo = document.getElementById('user-info');
-    const accesoBotones = document.getElementById('acceso-botones');
-    const userNameSpan = document.getElementById('userName');
-    const adminLink = document.getElementById('admin-link');
-
-    if (usuarioLogueado) {
-        const usuario = JSON.parse(usuarioLogueado);
-        if (userNameSpan) {
-            userNameSpan.textContent = typeof saludoNavbar === 'function'
-                ? saludoNavbar(usuario.nombre)
-                : 'Hola, ' + usuario.nombre;
-        }
-        if (userInfo) userInfo.style.display = 'block';
-        if (accesoBotones) accesoBotones.style.display = 'none';
-
-        if (adminLink) {
-            adminLink.style.display = (usuario.rol || '').toUpperCase() === 'ADMIN' ? 'block' : 'none';
-        }
-    } else {
-        if (userInfo) userInfo.style.display = 'none';
-        if (accesoBotones) accesoBotones.style.display = 'block';
-        if (adminLink) adminLink.style.display = 'none';
-    }
-    if (typeof actualizarEnlacesNavbarSesion === 'function') {
-        actualizarEnlacesNavbarSesion();
-    }
-}
-
-function cerrarSesion() {
-    limpiarSesionLocal();
-    actualizarNavbar();
-    window.location.href = typeof urlApp === 'function' ? urlApp('/index.html') : '../../index.html';
-}
-
 function enriquecerProducto(producto) {
     const base = productos.find(function (p) { return p.id === producto.id; }) || {};
     return Object.assign({}, base, producto, {
@@ -211,34 +172,10 @@ async function cargarCatalogoDesdeApi() {
 }
 
 if (document.getElementById('cards-container')) {
-    fetch('../../components/navbar/navbar.html')
-        .then(function (res) { return res.text(); })
-        .then(function (html) {
-            document.getElementById('header').innerHTML = html;
-            if (typeof inicializarNavbarCargado === 'function') {
-                inicializarNavbarCargado();
-            } else {
-                actualizarNavbar();
-                if (typeof marcarEnlaceNavbarActivo === 'function') {
-                    marcarEnlaceNavbarActivo();
-                }
-                const btnCerrarSesion = document.getElementById('btnCerrarSesion');
-                if (btnCerrarSesion) {
-                    btnCerrarSesion.addEventListener('click', cerrarSesion);
-                }
-            }
-        })
-        .catch(function (err) { console.error('Error cargando el navbar:', err); });
-
-    fetch('../../components/footer/footer.html')
-        .then(function (res) { return res.text(); })
-        .then(function (html) {
-            document.getElementById('footer-placeholder').innerHTML = html;
-            if (typeof aplicarRutasImagenes === 'function') {
-                aplicarRutasImagenes(document.getElementById('footer-placeholder'));
-            }
-        })
-        .catch(function (err) { console.error('Error cargando el footer:', err); });
+    cargarLayoutPublico({
+        navbarPath: '../../components/navbar/navbar.html',
+        footerPath: '../../components/footer/footer.html',
+    });
 
     const btnVerTodos = document.getElementById('btn-ver-todos');
     if (btnVerTodos) {

@@ -1,68 +1,9 @@
-/**
- * Actualiza la interfaz del navbar según el estado de sesión del usuario.
- */
-function actualizarNavbar() {
-    const usuarioLogueado = localStorage.getItem('usuarioLogueado');
-    const userInfo = document.getElementById('user-info');
-    const accesoBotones = document.getElementById('acceso-botones');
-    const userNameSpan = document.getElementById('userName');
-    const adminLink = document.getElementById('admin-link');
-    
-    if (usuarioLogueado) {
-        const usuario = JSON.parse(usuarioLogueado);
-        if (userNameSpan) userNameSpan.textContent = typeof saludoNavbar === 'function' ? saludoNavbar(usuario.nombre) : 'Hola, ' + usuario.nombre;
-        if (userInfo) userInfo.style.display = 'block';
-        if (accesoBotones) accesoBotones.style.display = 'none';
-        
-        if (adminLink) {
-            adminLink.style.display = (usuario.rol || '').toUpperCase() === 'ADMIN' ? 'block' : 'none';
-        }
-    } else {
-        if (userInfo) userInfo.style.display = 'none';
-        if (accesoBotones) accesoBotones.style.display = 'block';
-        if (adminLink) adminLink.style.display = 'none';
-    }
-    if (typeof actualizarEnlacesNavbarSesion === 'function') {
-        actualizarEnlacesNavbarSesion();
-    }
-}
+cargarLayoutPublico({
+  navbarPath: "../../components/navbar/navbar.html",
+  footerPath: "../../components/footer/footer.html",
+});
 
-/**
- * Cierra la sesión del usuario y redirige al inicio.
- */
-function cerrarSesion() {
-    limpiarSesionLocal();
-    actualizarNavbar();
-    window.location.href = typeof urlApp === 'function' ? urlApp('/index.html') : '../../index.html';
-}
-
-/**
- * Carga los componentes comunes (navbar y footer) mediante fetch.
- * Las rutas son relativas a la ubicación actual (pages/reservations/).
- */
-fetch("../../components/navbar/navbar.html")
-  .then((res) => res.text())
-  .then((html) => { 
-      document.getElementById("header").innerHTML = html;
-      if (typeof inicializarNavbarCargado === 'function') {
-          inicializarNavbarCargado();
-      } else {
-          actualizarNavbar();
-          if (typeof marcarEnlaceNavbarActivo === 'function') {
-              marcarEnlaceNavbarActivo();
-          }
-          const btnCerrarSesion = document.getElementById('btnCerrarSesion');
-          if (btnCerrarSesion) {
-              btnCerrarSesion.addEventListener('click', cerrarSesion);
-          }
-      }
-  })
-  .catch((err) => console.error("Error cargando el navbar:", err));
-
-fetch("../../components/footer/footer.html")
-  .then((res) => res.text())
-  .then((html) => { document.getElementById("footer-placeholder").innerHTML = html; })
-  .catch((err) => console.error("Error cargando el footer:", err));
+var slotsOcupadosCache = {};
 
 /**
  * Renderiza la información del servicio seleccionado en la página de reserva.
@@ -406,6 +347,42 @@ function obtenerHorasReservables(fechaStr) {
   return filtrarHorasPorReglasNegocio(fechaStr, horas);
 }
 
+async function cargarSlotsOcupados(empleadoId, fechaStr) {
+  var key = empleadoId + "_" + fechaStr;
+  if (Object.prototype.hasOwnProperty.call(slotsOcupadosCache, key)) {
+    return slotsOcupadosCache[key];
+  }
+  try {
+    var data = await fetchApiPublic(
+      "/reservas/ocupadas?empleadoId=" + empleadoId + "&fecha=" + fechaStr
+    );
+    slotsOcupadosCache[key] = Array.isArray(data) ? data : [];
+  } catch (err) {
+    slotsOcupadosCache[key] = [];
+  }
+  return slotsOcupadosCache[key];
+}
+
+function slotSeSolapaConOcupados(hora, duracionMinutos, ocupados) {
+  var inicio = parseHoraAMinutos(hora);
+  var fin = inicio + duracionMinutos;
+  return ocupados.some(function (o) {
+    var h = (o.hora || "00:00").substring(0, 5);
+    var inicioO = parseHoraAMinutos(h);
+    var finO = inicioO + (o.duracionMinutos || 60);
+    return inicio < finO && fin > inicioO;
+  });
+}
+
+async function filtrarHorasOcupadas(fechaStr, horas) {
+  if (!estado.estilista || !horas.length) return horas;
+  var ocupados = await cargarSlotsOcupados(estado.estilista.empleadoId, fechaStr);
+  var duracion = obtenerDuracionServicioMinutos();
+  return horas.filter(function (h) {
+    return !slotSeSolapaConOcupados(h, duracion, ocupados);
+  });
+}
+
 function fechaTieneHorariosReservables(fechaStr) {
   return obtenerHorasReservables(fechaStr).length > 0;
 }
@@ -494,9 +471,13 @@ function seleccionarFecha(fechaStr) {
 /**
  * Renderiza los horarios disponibles para la fecha seleccionada.
  */
-function renderHoras(fechaStr) {
+async function renderHoras(fechaStr) {
   const contenedor = document.getElementById("horasGrid");
-  const horas = obtenerHorasReservables(fechaStr);
+  contenedor.innerHTML =
+    '<p class="text-muted" style="font-size:13px;">Cargando horarios disponibles...</p>';
+
+  let horas = obtenerHorasReservables(fechaStr);
+  horas = await filtrarHorasOcupadas(fechaStr, horas);
 
   if (horas.length === 0) {
     const duracion = obtenerDuracionServicioMinutos();
