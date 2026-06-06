@@ -32,7 +32,10 @@ function obtenerBaseAplicacion() {
     if (componentsIdx > 0) {
         return path.substring(0, componentsIdx);
     }
-    if (path.indexOf("github.io") !== -1 && GITHUB_PAGES_BASE_PATH) {
+    if (GITHUB_PAGES_BASE_PATH && path.indexOf(GITHUB_PAGES_BASE_PATH) === 0) {
+        return GITHUB_PAGES_BASE_PATH;
+    }
+    if (ventana.location.hostname.indexOf("github.io") !== -1 && GITHUB_PAGES_BASE_PATH) {
         return GITHUB_PAGES_BASE_PATH;
     }
     return "";
