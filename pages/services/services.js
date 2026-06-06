@@ -10,7 +10,12 @@ import { renderizarServicios } from '../catalogoServicios/catalogoServicios.js';
  */
 fetch('../../components/navbar/navbar.html')
     .then(res => res.text())
-    .then(html => { document.getElementById('header').innerHTML = html; })
+    .then(html => {
+        document.getElementById('header').innerHTML = html;
+        if (typeof inicializarNavbarCargado === 'function') {
+            inicializarNavbarCargado();
+        }
+    })
     .catch(err => console.error('Error cargando el navbar:', err));
 
 /**

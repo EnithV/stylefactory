@@ -52,17 +52,20 @@ fetch('components/navbar/navbar.html')
     .then(res => res.text())
     .then(html => {
         document.getElementById('header').innerHTML = html;
-        if (typeof aplicarRutasImagenes === 'function') {
-            aplicarRutasImagenes(document.getElementById('header'));
-        }
-        actualizarNavbar();
-        const btnCerrarSesion = document.getElementById('btnCerrarSesion');
-        if (btnCerrarSesion) {
-            btnCerrarSesion.addEventListener('click', cerrarSesion);
-        }
-
-        if (typeof marcarEnlaceNavbarActivo === 'function') {
-            marcarEnlaceNavbarActivo();
+        if (typeof inicializarNavbarCargado === 'function') {
+            inicializarNavbarCargado();
+        } else {
+            if (typeof aplicarRutasImagenes === 'function') {
+                aplicarRutasImagenes(document.getElementById('header'));
+            }
+            actualizarNavbar();
+            const btnCerrarSesion = document.getElementById('btnCerrarSesion');
+            if (btnCerrarSesion) {
+                btnCerrarSesion.addEventListener('click', cerrarSesion);
+            }
+            if (typeof marcarEnlaceNavbarActivo === 'function') {
+                marcarEnlaceNavbarActivo();
+            }
         }
     })
     .catch(err => console.error('Error cargando el navbar:', err));

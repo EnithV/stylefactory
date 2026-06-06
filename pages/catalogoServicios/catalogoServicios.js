@@ -215,13 +215,17 @@ if (document.getElementById('cards-container')) {
         .then(function (res) { return res.text(); })
         .then(function (html) {
             document.getElementById('header').innerHTML = html;
-            actualizarNavbar();
-            if (typeof marcarEnlaceNavbarActivo === 'function') {
-                marcarEnlaceNavbarActivo();
-            }
-            const btnCerrarSesion = document.getElementById('btnCerrarSesion');
-            if (btnCerrarSesion) {
-                btnCerrarSesion.addEventListener('click', cerrarSesion);
+            if (typeof inicializarNavbarCargado === 'function') {
+                inicializarNavbarCargado();
+            } else {
+                actualizarNavbar();
+                if (typeof marcarEnlaceNavbarActivo === 'function') {
+                    marcarEnlaceNavbarActivo();
+                }
+                const btnCerrarSesion = document.getElementById('btnCerrarSesion');
+                if (btnCerrarSesion) {
+                    btnCerrarSesion.addEventListener('click', cerrarSesion);
+                }
             }
         })
         .catch(function (err) { console.error('Error cargando el navbar:', err); });
@@ -230,6 +234,9 @@ if (document.getElementById('cards-container')) {
         .then(function (res) { return res.text(); })
         .then(function (html) {
             document.getElementById('footer-placeholder').innerHTML = html;
+            if (typeof aplicarRutasImagenes === 'function') {
+                aplicarRutasImagenes(document.getElementById('footer-placeholder'));
+            }
         })
         .catch(function (err) { console.error('Error cargando el footer:', err); });
 
