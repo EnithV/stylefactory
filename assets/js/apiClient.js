@@ -1,9 +1,8 @@
+import { IMAGEN_SERVICIO_DEFAULT, normalizarUrlImagen } from "./imageAssets.js";
+
 const API_URL =
     (typeof globalThis !== "undefined" && globalThis.API_BASE) ||
     "https://stylefactoryapi.onrender.com";
-
-const IMAGEN_SERVICIO_DEFAULT =
-    "https://res.cloudinary.com/diq2bkb49/image/upload/v1776957776/cortePremium_engl79.png";
 
 export function obtenerToken() {
     return localStorage.getItem("token");
@@ -22,7 +21,7 @@ export function normalizarServicioDesdeApi(dto) {
         id: dto.id,
         nombre: dto.nombre,
         descripcion: dto.descripcion,
-        imagen: dto.urlImagen || IMAGEN_SERVICIO_DEFAULT,
+        imagen: normalizarUrlImagen(dto.urlImagen || IMAGEN_SERVICIO_DEFAULT),
         status: dto.estado,
         precio: dto.precio,
         tipo: dto.tipoServicio || "",
@@ -34,7 +33,7 @@ export function servicioParaApi(data) {
     return {
         nombre: data.nombre,
         descripcion: data.descripcion,
-        urlImagen: data.urlImagen || data.imagen || IMAGEN_SERVICIO_DEFAULT,
+        urlImagen: normalizarUrlImagen(data.urlImagen || data.imagen || IMAGEN_SERVICIO_DEFAULT),
         estado:
             data.estado !== undefined
                 ? !!data.estado

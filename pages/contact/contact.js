@@ -95,5 +95,14 @@ fetch('../../components/footer/footer.html')
     .then(res => res.text())
     .then(html => {
         document.getElementById('footer-placeholder').innerHTML = html;
+        if (typeof aplicarRutasImagenes === 'function') {
+            aplicarRutasImagenes(document.getElementById('footer-placeholder'));
+        }
     })
     .catch(err => console.error('Error cargando el footer:', err));
+
+document.addEventListener('DOMContentLoaded', function () {
+    if (typeof aplicarRutasImagenes === 'function') {
+        aplicarRutasImagenes(document);
+    }
+});

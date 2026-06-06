@@ -48,7 +48,9 @@ function enriquecerProducto(producto) {
     return Object.assign({}, base, producto, {
         tipo: producto.tipo || base.tipo || '',
         duracionMinutos: producto.duracionMinutos ?? base.duracionMinutos ?? 60,
-        imagen: producto.imagen || base.imagen || '',
+        imagen: typeof resolverUrlImagen === 'function'
+            ? resolverUrlImagen(producto.imagen || base.imagen || '')
+            : (producto.imagen || base.imagen || ''),
     });
 }
 
@@ -165,7 +167,7 @@ function renderizarCatalogo() {
         return (
             '<article class="card-servicio">' +
             '<div class="card-imagen-wrap">' +
-            '<img src="' + producto.imagen + '" alt="' + producto.nombre + '" class="card-imagen" loading="lazy">' +
+            '<img src="' + (typeof resolverUrlImagen === 'function' ? resolverUrlImagen(producto.imagen) : producto.imagen) + '" alt="' + producto.nombre + '" class="card-imagen" loading="lazy">' +
             badgeTipo +
             '</div>' +
             '<div class="card-contenido">' +

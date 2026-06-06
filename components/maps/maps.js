@@ -2,21 +2,21 @@
 const sucursales = [
     {
         nombre: "Style Factory - Sede Principal",
-        img: "https://res.cloudinary.com/diq2bkb49/image/upload/v1776619972/Style1_zajaih.png",
+        img: "/assets/images/sucursales/style1.png",
         direccion: "Calle 123 #45-67, Bogotá",
         lat: 4.6097,
         lng: -74.0817
     },
     {
         nombre: "Style Factory - Chapinero",
-        img: "https://res.cloudinary.com/diq2bkb49/image/upload/v1776619969/Style2_rgxkqp.png",
+        img: "/assets/images/sucursales/style2.png",
         direccion: "Carrera 13 #54-32, Bogotá",
         lat: 4.6473,
         lng: -74.0662
     },
     {
         nombre: "Style Factory - Usaquén",
-        img: "https://res.cloudinary.com/diq2bkb49/image/upload/v1776619970/Style3_glqcl7.png",
+        img: "/assets/images/sucursales/style3.png",
         direccion: "Calle 119 #6-21, Bogotá",
         lat: 4.6941,
         lng: -74.0291
@@ -34,6 +34,10 @@ const estilosMapa = [
 ]
 
 // Esta función renderiza el mapa y sus marcadores
+function resolverImagenMapa(ruta) {
+    return typeof resolverUrlImagen === "function" ? resolverUrlImagen(ruta) : ruta;
+}
+
 function inicializacionMap() {
     // Limpia el contenido previo de la lista lateral para evitar duplicados
     document.getElementById('sedes-list').innerHTML = '';
@@ -66,7 +70,7 @@ function inicializacionMap() {
             title: sucursal.nombre,
             // Asigna el estilo que va a tener ese marcador
             icon: {
-                url: "https://res.cloudinary.com/diq2bkb49/image/upload/v1776620229/logo_fondo_dorado_atruxi.png",
+                url: resolverImagenMapa("/assets/images/branding/logo-dorado.png"),
                 scaledSize: new google.maps.Size(100, 100),
                 anchor: new google.maps.Point(60, 60)
             }
@@ -91,7 +95,7 @@ function inicializacionMap() {
                     ${!esMobile ? `
                     <div style="width:100%; height:130px; overflow:hidden; border-radius:6px; margin-bottom:8px;
                     background:#f0f0f0; display:flex; align-items:center; justify-content:center;">
-                        <img src="${sucursal.img}" alt="${sucursal.nombre}"
+                        <img src="${resolverImagenMapa(sucursal.img)}" alt="${sucursal.nombre}"
                         style="max-width:100%; max-height:130px; object-fit:contain;">
                     </div>` : ''}
                     <strong style="color:#522676">${sucursal.nombre}</strong><br>
@@ -112,7 +116,7 @@ function inicializacionMap() {
         card.className = 'sede-card' // Asigna una clase CSS
         card.id = `sede-${index}` // Asigna un ID baso en su indice
         card.innerHTML = `
-            <img class="sede-card-img" src="${sucursal.img}" alt="${sucursal.nombre}">
+            <img class="sede-card-img" src="${resolverImagenMapa(sucursal.img)}" alt="${sucursal.nombre}">
             <div class="sede-card-info">
                 <h4>${sucursal.nombre}</h4>
                 <p>${sucursal.direccion}</p>

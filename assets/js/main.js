@@ -52,6 +52,9 @@ fetch('components/navbar/navbar.html')
     .then(res => res.text())
     .then(html => {
         document.getElementById('header').innerHTML = html;
+        if (typeof aplicarRutasImagenes === 'function') {
+            aplicarRutasImagenes(document.getElementById('header'));
+        }
         actualizarNavbar();
         const btnCerrarSesion = document.getElementById('btnCerrarSesion');
         if (btnCerrarSesion) {
@@ -82,6 +85,9 @@ fetch('components/infoIndex/infoIndex.html')
     .then(res => res.text())
     .then(html => {
         document.getElementById('infoIndex-placeholder').innerHTML = html;
+        if (typeof aplicarRutasImagenes === 'function') {
+            aplicarRutasImagenes(document.getElementById('infoIndex-placeholder'));
+        }
     })
     .catch(err => console.error('Error cargando la información del index:', err));
 
@@ -93,6 +99,9 @@ fetch('components/ServiciosDestacados/ServiciosDestacados.html')
     .then(res => res.text())
     .then(html => {
         document.getElementById('serviceDes-placeholder').innerHTML = html;
+        if (typeof aplicarRutasImagenes === 'function') {
+            aplicarRutasImagenes(document.getElementById('serviceDes-placeholder'));
+        }
     })
     .catch(err => console.error('Error cargando servicios destacados:', err));
 
@@ -104,6 +113,9 @@ fetch('components/review/review.html')
     .then(res => res.text())
     .then(html => {
         document.getElementById('review-placeholder').innerHTML = html;
+        if (typeof aplicarRutasImagenes === 'function') {
+            aplicarRutasImagenes(document.getElementById('review-placeholder'));
+        }
 
         // Inyecta la hoja de estilos de las reseñas
         const link = document.createElement('link');
@@ -127,5 +139,8 @@ fetch('components/footer/footer.html')
     .then(res => res.text())
     .then(html => {
         document.getElementById('footer-placeholder').innerHTML = html;
+        if (typeof aplicarRutasImagenes === 'function') {
+            aplicarRutasImagenes(document.getElementById('footer-placeholder'));
+        }
     })
     .catch(err => console.error('Error cargando el footer:', err));

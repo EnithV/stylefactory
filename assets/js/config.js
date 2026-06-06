@@ -48,6 +48,62 @@ function urlApp(rutaDesdeRaiz) {
 }
 
 /**
+ * Ruta absoluta de una imagen bajo assets/images (compatible con GitHub Pages).
+ */
+function urlAsset(rutaRelativa) {
+    var ruta = rutaRelativa || "";
+    if (ruta.indexOf("/assets/images/") !== 0) {
+        ruta = "/assets/images/" + ruta.replace(/^\/+/, "");
+    }
+    return urlApp(ruta);
+}
+
+/**
+ * Corrige src de imágenes locales tras inyectar componentes HTML.
+ */
+function aplicarRutasImagenes(root) {
+    var scope = root || document;
+    scope.querySelectorAll('img[src^="/assets/images/"]').forEach(function (img) {
+        img.src = urlApp(img.getAttribute("src"));
+    });
+}
+
+/** Migra URLs de Cloudinary o rutas locales a la URL pública del sitio. */
+function resolverUrlImagen(url) {
+    if (!url) {
+        return urlAsset("servicios/corte-premium.png");
+    }
+    if (url.indexOf("http") === 0 && url.indexOf("cloudinary.com") === -1) {
+        return url;
+    }
+    var legacy = {
+        "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336588/Sty1_wj2bmn.png": "empleados/sty1.png",
+        "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336622/Sty2_z1upkm.png": "empleados/sty2.png",
+        "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336764/Sty3_hk8sdy.png": "empleados/sty3.png",
+        "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336831/Sty4_yhgjef.png": "empleados/sty4.png",
+        "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336977/Sty5_wnafrw.png": "empleados/sty5.png",
+        "https://res.cloudinary.com/diq2bkb49/image/upload/v1777337017/Sty6_vgztvb.png": "empleados/sty6.png",
+        "https://res.cloudinary.com/diq2bkb49/image/upload/v1776957776/cortePremium_engl79.png": "servicios/corte-premium.png",
+        "https://res.cloudinary.com/diq2bkb49/image/upload/v1776957782/tinteColoracion_xlsf5v.png": "servicios/tinte-coloracion.png",
+        "https://res.cloudinary.com/diq2bkb49/image/upload/v1776957777/keratina_bjqvof.png": "servicios/keratina.png",
+        "https://res.cloudinary.com/diq2bkb49/image/upload/v1776957775/barbaAfeitado_fcacso.png": "servicios/barba-afeitado.png",
+        "https://res.cloudinary.com/diq2bkb49/image/upload/v1776957782/peinadoEventos_bk9cyr.png": "servicios/peinado-eventos.png",
+        "https://res.cloudinary.com/diq2bkb49/image/upload/v1776957780/mechasReflejos_p5hod7.png": "servicios/mechas-reflejos.png",
+        "https://res.cloudinary.com/diq2bkb49/image/upload/v1776957783/tratamientoCapilar_mqkb13.png": "servicios/tratamiento-capilar.png",
+        "https://res.cloudinary.com/diq2bkb49/image/upload/v1776957775/cepilladoBrasile%C3%B1o_ela99r.png": "servicios/cepillado-brasileno.png",
+        "https://res.cloudinary.com/diq2bkb49/image/upload/v1776957779/maquillajeProfesional_h9vo1k.png": "servicios/maquillaje-profesional.png",
+        "https://res.cloudinary.com/diq2bkb49/image/upload/v1776957778/limpiezaFacial_fmvrnn.png": "servicios/limpieza-facial.png"
+    };
+    if (legacy[url]) {
+        return urlAsset(legacy[url]);
+    }
+    if (url.indexOf("/assets/images/") === 0) {
+        return urlApp(url);
+    }
+    return url;
+}
+
+/**
  * Saludo corto para el navbar (solo primer nombre, evita romper el layout).
  */
 function saludoNavbar(nombre) {
@@ -134,6 +190,9 @@ function inicializarNavbarCargado() {
         actualizarNavbar();
     } else {
         actualizarEnlacesNavbarSesion();
+    }
+    if (typeof aplicarRutasImagenes === 'function') {
+        aplicarRutasImagenes(document.getElementById('header'));
     }
     marcarEnlaceNavbarActivo();
     var btnCerrarSesion = document.getElementById('btnCerrarSesion');

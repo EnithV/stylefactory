@@ -3,7 +3,7 @@
     position: relative;
     width: 100%;
     height: 550px;
-    background: url('https://res.cloudinary.com/diq2bkb49/image/upload/v1776957534/bannerInicio_opgwmt.png') center/cover no-repeat;
+    background: url('../../assets/images/branding/banner-inicio.png') center/cover no-repeat;
     display: flex;
     align-items: center;
     justify-content: center;

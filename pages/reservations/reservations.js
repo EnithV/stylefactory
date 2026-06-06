@@ -91,7 +91,7 @@ function renderizarReservas() {
         <p class="text-muted" style="font-size:14px;margin-top:8px;">Duración estimada: ${duracionMin} min</p>
       </div>
       <div class="contenedor_imagen">
-        <img src="${servicio.imagen}" alt="${servicio.nombre}">
+        <img src="${typeof resolverUrlImagen === 'function' ? resolverUrlImagen(servicio.imagen) : servicio.imagen}" alt="${servicio.nombre}">
       </div>
     </div>
     <div class="contenedor_precio">
@@ -124,16 +124,16 @@ let horariosPorEmpleado = {};
 
 /** Respaldo local si el API no responde (mismos IDs y fotos que el seed de Supabase). */
 const ESTILISTAS_FALLBACK = [
-  { id: 1, empleadoId: 1, nombre: "Ana García", especialidad: "Colorimetría", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336588/Sty1_wj2bmn.png" },
-  { id: 2, empleadoId: 2, nombre: "Laura Martínez", especialidad: "Cortes y peinados", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336622/Sty2_z1upkm.png" },
-  { id: 3, empleadoId: 3, nombre: "Camila Rodríguez", especialidad: "Tratamientos capilares", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336764/Sty3_hk8sdy.png" },
-  { id: 4, empleadoId: 4, nombre: "Valentina López", especialidad: "Alisados y keratina", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336831/Sty4_yhgjef.png" },
-  { id: 5, empleadoId: 5, nombre: "Daniel Herrera", especialidad: "Corte caballero y barba", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336977/Sty5_wnafrw.png" },
-  { id: 6, empleadoId: 6, nombre: "Santiago Ruiz", especialidad: "Barbería clásica y perfilado de barba", foto: "https://res.cloudinary.com/diq2bkb49/image/upload/v1777337017/Sty6_vgztvb.png" },
+  { id: 1, empleadoId: 1, nombre: "Ana García", especialidad: "Colorimetría", foto: "/assets/images/empleados/sty1.png" },
+  { id: 2, empleadoId: 2, nombre: "Laura Martínez", especialidad: "Cortes y peinados", foto: "/assets/images/empleados/sty2.png" },
+  { id: 3, empleadoId: 3, nombre: "Camila Rodríguez", especialidad: "Tratamientos capilares", foto: "/assets/images/empleados/sty3.png" },
+  { id: 4, empleadoId: 4, nombre: "Valentina López", especialidad: "Alisados y keratina", foto: "/assets/images/empleados/sty4.png" },
+  { id: 5, empleadoId: 5, nombre: "Daniel Herrera", especialidad: "Corte caballero y barba", foto: "/assets/images/empleados/sty5.png" },
+  { id: 6, empleadoId: 6, nombre: "Santiago Ruiz", especialidad: "Barbería clásica y perfilado de barba", foto: "/assets/images/empleados/sty6.png" },
 ];
 
 const IMAGEN_ESTILISTA_DEFAULT =
-  "https://res.cloudinary.com/diq2bkb49/image/upload/v1777336588/Sty1_wj2bmn.png";
+  "/assets/images/empleados/sty1.png";
 
 /** Horario de atención en salón (reglas de negocio del calendario). */
 const HORA_APERTURA_ATENCION = 9;
@@ -146,7 +146,7 @@ function normalizarEstilistaDesdeApi(dto) {
     empleadoId: dto.id,
     nombre: dto.nombre || "Estilista",
     especialidad: dto.especialidad || "",
-    foto: dto.url || IMAGEN_ESTILISTA_DEFAULT,
+    foto: resolverUrlImagen(dto.url || IMAGEN_ESTILISTA_DEFAULT),
   };
 }
 
@@ -225,7 +225,7 @@ function renderCarouselEstilistas() {
       row +=
         '<div class="col-md-3">' +
         '<div class="card card-estilista" id="card-estilista-' + est.id + '" onclick="seleccionarEstilista(' + est.id + ')">' +
-        '<img src="' + est.foto + '" class="card-img-top" alt="' + est.nombre + '">' +
+        '<img src="' + resolverUrlImagen(est.foto) + '" class="card-img-top" alt="' + est.nombre + '">' +
         '<div class="card-body text-center">' +
         "<h5>" + est.nombre + "</h5>" +
         '<p class="text-purple">' + est.especialidad + "</p>" +
