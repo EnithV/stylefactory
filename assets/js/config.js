@@ -315,11 +315,29 @@ function cerrarSesion() {
 }
 
 /**
+ * Corrige imágenes con src="/assets/images/..." en el HTML estático (GitHub Pages usa /stylefactory/).
+ */
+function programarRutasImagenesDocumento() {
+    if (typeof aplicarRutasImagenes !== "function") {
+        return;
+    }
+    var aplicar = function () {
+        aplicarRutasImagenes(document);
+    };
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", aplicar);
+    } else {
+        aplicar();
+    }
+}
+
+/**
  * Carga navbar y, opcionalmente, footer desde componentes HTML.
  */
 function cargarLayoutPublico(config) {
     var cfg = config || {};
     window._layoutHomePath = cfg.homePath || '/index.html';
+    programarRutasImagenesDocumento();
 
     var headerEl = document.getElementById('header');
     if (headerEl && cfg.navbarPath) {
@@ -348,7 +366,12 @@ function cargarLayoutPublico(config) {
     if (footerEl && cfg.footerPath) {
         fetch(cfg.footerPath)
             .then(function (res) { return res.text(); })
-            .then(function (html) { footerEl.innerHTML = html; })
+            .then(function (html) {
+                footerEl.innerHTML = html;
+                if (typeof aplicarRutasImagenes === 'function') {
+                    aplicarRutasImagenes(footerEl);
+                }
+            })
             .catch(function (err) { console.error('Error cargando footer:', err); });
     }
 }
